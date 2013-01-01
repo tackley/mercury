@@ -1,0 +1,5 @@
+package mercury
+
+object Store {
+
+}

@@ -4,12 +4,11 @@ import org.jsoup.Jsoup
 import collection.JavaConverters._
 import org.jsoup.nodes.Element
 
-case class Link(href: String, componentName: Option[String] = None, isSublink: Boolean)
+//case class Link(href: String, componentName: Option[String] = None, isSublink: Boolean)
 
 object Main extends App {
 
-  //val f = new File("nf.html")
-  //val f = new File("sport.html")
+  /*
   val doc = Jsoup.parse(new URL("http://www.guardian.co.uk"), 9999)
 
   val elems = doc.select("a[href^=http:]").asScala
@@ -60,7 +59,7 @@ object Main extends App {
   }
 
   proms.map(_.pretty).toList.sorted.foreach(println)
-
+   */
 //  for ((comp,l) <- grouped) {
 //    val simpleComp = comp flatMap { c =>
 //      c.split(":").map(_.trim).filterNot(_.isEmpty).lastOption

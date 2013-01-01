@@ -1,0 +1,12 @@
+application: mercury
+version: 1
+runtime: java
+threadsafe: true
+
+handlers:
+  - url: /admin/*
+    filter: mercury.Admin
+    #login: admin
+
+inbound_services:
+  - warmup
