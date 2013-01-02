@@ -1,0 +1,8 @@
+indexes:
+
+  - kind: scan
+    ancestor: no
+    properties:
+      - name: srcUrl
+      - name: dt
+        direction: desc

@@ -1,0 +1,37 @@
+@(url: String,
+    availableScans: List[mercury.Controller#AvailableScan],
+    optComponents: Option[List[mercury.Controller#Component]])
+
+@main("Show Snaphots") {
+  <h1>Show Snapshots for @url</h1>
+
+  <div id="available-scans">
+      <ol>
+          @for(scan <- availableScans) {
+            <li><a href="@scan.snapshotUrl">@scan.niceDate</a></li>
+          }
+      </ol>
+  </div>
+
+  @for(components <- optComponents) {
+    <div id="components">
+        @for(component <- components) {
+           <h3>@component.name</h3>
+
+           <ol>
+               @for(promo <- component.topLevelLinks) {
+                 <li><a href="@promo.url">@promo.url</a></li>
+
+                 <ol>
+                     @for(sublink <- component.sublinksForPosition(promo.topPosition)) {
+                        <li><a href="@sublink.url">@sublink.url</a></li>
+                     }
+                 </ol>
+               }
+           </ol>
+        }
+    </div>
+  }
+
+
+}

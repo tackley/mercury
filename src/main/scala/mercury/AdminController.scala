@@ -5,7 +5,7 @@ import unfiltered.response._
 import org.slf4j.LoggerFactory
 import java.net.URL
 
-class Admin extends unfiltered.filter.Plan {
+class AdminController extends unfiltered.filter.Plan {
   private val log = LoggerFactory.getLogger(getClass)
 
   import QParams._
@@ -21,6 +21,8 @@ class Admin extends unfiltered.filter.Plan {
         log.info("Scanning {}...", url)
 
         val promotions = PageScanner.findPromotions(url)
+
+        Store.write(url, promotions)
 
         ResponseString(promotions.toList.map(_.pretty).sorted.mkString("\n"))
       }

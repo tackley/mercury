@@ -12,16 +12,26 @@ case class Promotion(
   topPosition: Int,
   sublinkPosition: Option[Int]
 ) {
-  def pretty = component + " position " + topPosition +
-    sublinkPosition.map(" sublink " + _).getOrElse("") +
-    " => " + url
+  def pretty = positionInWords + " => " + url
+
+  def positionInWords = component + " position " + topPosition +
+    sublinkPosition.map(" sublink " + _).getOrElse("")
+
+  def isSublink = sublinkPosition.isDefined
 }
 
 object PageScanner {
   case class SimpleLink(href: String, componentName: Option[String] = None, isSublink: Boolean)
 
   def findPromotions(url: URL): Set[Promotion] = {
-    val doc = Jsoup.parse(url, 20000)
+    // workaround our astonishingly crap geo location rules
+    // need to set GU_EDITION to uk to actually get the UK edition from google's US servers
+    // aarrrrrrgh!!!
+    val conn = url.openConnection()
+    conn.setRequestProperty("Cookie", "GU_EDITION=uk")
+    conn.setRequestProperty("User-Agent", "mercury; contact graham.tackley@guardian.co.uk")
+
+    val doc = Jsoup.parse(conn.getInputStream, "UTF-8", url.toString)
 
     val elems = doc.select("a[href^=http:]").asScala
 

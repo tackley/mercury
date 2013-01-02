@@ -1,12 +1,13 @@
-application: mercury
+application: gt-mercury
 version: 1
 runtime: java
 threadsafe: true
 
 handlers:
   - url: /admin/*
-    filter: mercury.Admin
+    filter: mercury.AdminController
     #login: admin
 
-inbound_services:
-  - warmup
+  - url: /*
+    filter: mercury.Controller
+

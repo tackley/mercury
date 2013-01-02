@@ -17,10 +17,10 @@ libraryDependencies ++= Seq(
     "org.scalatest" %% "scalatest" % "1.8" % "test"
 )
 
-resolvers += "Guardian Github Releases" at "http://guardian.github.com/maven/repo-releases"
-
 libraryDependencies += "org.eclipse.jetty" % "jetty-webapp" % "7.6.8.v20121106" % "container"
 
 appengineSettings
+
+Twirl.settings
 
 

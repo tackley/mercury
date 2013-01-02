@@ -1,0 +1,14 @@
+@main("Mercury") {
+  <h1>Weclome to Mercury</h1>
+
+  <h2>A Time Machine inspired by <em>Hg</em> Wells</h2>
+
+  <h3>Show snapshots (mainly useful for debugging)</h3>
+
+  <ol>
+      @for(p <- mercury.Pages.all) {
+        <li><a href="/snapshot?url=@p.url">@p.name</a></li>
+      }
+  </ol>
+
+}
