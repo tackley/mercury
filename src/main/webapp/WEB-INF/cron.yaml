@@ -1,0 +1,5 @@
+cron:
+- description: scan uk network front
+  url: /admin/cron/scan?url=http://www.guardian.co.uk/
+  schedule: every 5 minutes synchronized
+

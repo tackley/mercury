@@ -20,11 +20,11 @@
 
            <ol>
                @for(promo <- component.topLevelLinks) {
-                 <li><a href="@promo.url">@promo.url</a></li>
+                 <li><a href="@promo.targetUrl">@promo.targetUrl</a></li>
 
                  <ol>
                      @for(sublink <- component.sublinksForPosition(promo.topPosition)) {
-                        <li><a href="@sublink.url">@sublink.url</a></li>
+                        <li><a href="@sublink.targetUrl">@sublink.targetUrl</a></li>
                      }
                  </ol>
                }

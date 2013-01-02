@@ -9,24 +9,22 @@ import com.google.appengine.api.datastore.Query.{SortDirection, FilterOperator, 
 import java.util.Date
 
 object Store {
-
-
   private val log = LoggerFactory.getLogger(getClass)
   private val ds = DatastoreServiceFactory.getDatastoreService
 
   def write(scannedUrl: URL, promotedLinks: Set[Promotion]) {
     log.info("Writing {} links to store...", promotedLinks.size)
-    val dt = DateTime.now
 
     val scanEntity = new Entity("scan")
-    scanEntity.setProperty("dt", dt.toDate)
-    scanEntity.setProperty("srcUrl", new GaeLink(scannedUrl.toString))
+    scanEntity.setProperty("dt", promotedLinks.head.dt.toDate)
+    scanEntity.setProperty("srcUrl", new GaeLink(promotedLinks.head.srcUrl))
     val scanKey = ds.put(scanEntity)
 
     val promoEntities = for (link <- promotedLinks) yield {
       val promoEntity = new Entity("promo", scanKey)
-      promoEntity.setPropertiesFrom(scanEntity)
-      promoEntity.setProperty("targetUrl", new GaeLink(link.url))
+      promoEntity.setProperty("dt", link.dt.toDate)
+      promoEntity.setProperty("srcUrl", new GaeLink(link.srcUrl))
+      promoEntity.setProperty("targetUrl", new GaeLink(link.targetUrl))
       promoEntity.setProperty("position", link.positionInWords)
       promoEntity.setProperty("component", link.component)
       promoEntity.setProperty("topPosition", link.topPosition)
@@ -41,7 +39,9 @@ object Store {
 
   private def parsePromotionEntity(e: Entity): Promotion = {
     Promotion(
-      url = e.getProperty("targetUrl").asInstanceOf[GaeLink].getValue,
+      dt = new DateTime(e.getProperty("dt").asInstanceOf[Date]),
+      srcUrl = e.getProperty("srcUrl").asInstanceOf[GaeLink].getValue,
+      targetUrl = e.getProperty("targetUrl").asInstanceOf[GaeLink].getValue,
       component = e.getProperty("component").toString,
       topPosition = e.getProperty("topPosition").asInstanceOf[Long].toInt,
       sublinkPosition = Option(e.getProperty("sublinkPosition")).map(_.asInstanceOf[Long].toInt)
@@ -62,7 +62,15 @@ object Store {
   def findPromotions(key: Key): List[Promotion] = {
     val q = new Query("promo").setAncestor(key)
 
-    ds.prepare(q).asIterable.asScala.map(parsePromotionEntity).toList
+    ds.prepare(q) .asIterable.asScala.map(parsePromotionEntity).toList
   }
+
+  def findHistory(url: String): List[Promotion] = {
+    val q = new Query("promo")
+      .setFilter(new FilterPredicate("targetUrl", FilterOperator.EQUAL, new GaeLink(url)))
+
+    ds.prepare(q).asIterable().asScala.map(parsePromotionEntity).toList
+  }
+
 
 }

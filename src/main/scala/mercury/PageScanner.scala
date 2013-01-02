@@ -4,20 +4,25 @@ import org.jsoup.Jsoup
 import java.net.URL
 import org.jsoup.nodes.Element
 import collection.JavaConverters._
+import org.joda.time.DateTime
 
 
 case class Promotion(
-  url: String,
+  dt: DateTime,
+  srcUrl: String,
+  targetUrl: String,
   component: String,
   topPosition: Int,
   sublinkPosition: Option[Int]
 ) {
-  def pretty = positionInWords + " => " + url
+  def pretty = positionInWords + " => " + targetUrl
 
-  def positionInWords = component + " position " + topPosition +
+  def positionInWords = "\"" + component + "\" position " + topPosition +
     sublinkPosition.map(" sublink " + _).getOrElse("")
 
   def isSublink = sublinkPosition.isDefined
+
+  def src = Pages.findName(srcUrl)
 }
 
 object PageScanner {
@@ -51,6 +56,7 @@ object PageScanner {
 
     val grouped: Map[Option[String], Seq[SimpleLink]] = links.groupBy { _.componentName }
 
+    val dt = DateTime.now
 
     val proms = for {
       (optionalComponent, links) <- grouped
@@ -58,7 +64,7 @@ object PageScanner {
       componentName <- optionalComponent
     } yield {
       val simpleComp = componentName.split(":").map(_.trim).filterNot(_.isEmpty).last
-      Promotion(href, simpleComp, topPos, sublinkPos)
+      Promotion(dt, url.toString, href, simpleComp, topPos, sublinkPos)
     }
 
     proms.toSet

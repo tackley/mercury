@@ -37,6 +37,13 @@ class Controller extends unfiltered.filter.Plan {
       }
 
       ResponseString(html.snapshot.render(url, availableScans, componentInfo).body) ~> HtmlContent
+
+    case GET(Path("/history") & Params(p)) =>
+      val url = p("url").headOption getOrElse sys.error("missing url")
+
+      val history: List[Promotion] = Store.findHistory(url).sortBy(-_.dt.getMillis)
+
+      ResponseString(html.history.render(url, history).body) ~> HtmlContent
   }
 
 }
