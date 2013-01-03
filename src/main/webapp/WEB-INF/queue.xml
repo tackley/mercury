@@ -1,0 +1,11 @@
+<!-- sadly, queue.yaml didn't work for me on the dev server -->
+<queue-entries>
+    <queue>
+        <name>scan-queue</name>
+        <rate>5/s</rate>
+        <retry-parameters>
+            <task-age-limit>1m</task-age-limit>
+            <min-backoff-seconds>1</min-backoff-seconds>
+        </retry-parameters>
+    </queue>
+</queue-entries>
