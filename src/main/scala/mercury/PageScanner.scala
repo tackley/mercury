@@ -46,7 +46,7 @@ object PageScanner {
         .map(_.attr("data-component"))
 
     val links = for (link <- elems) yield {
-      val href = link.attr("abs:href").takeWhile('?' !=).takeWhile('#' !=)
+      val href = link.attr("abs:href").takeWhile('?' != _).takeWhile('#' != _)
       val comp = findDataComponent(link)
       val isSublink = link.parents().asScala.exists(_.hasClass("sublinks"))
 
