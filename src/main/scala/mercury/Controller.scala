@@ -17,7 +17,7 @@ class Controller extends unfiltered.filter.Plan {
 
   case class Component(name: String, promos: List[Promotion]) {
     def topLevelLinks = promos.filterNot(_.isSublink)
-    def sublinksForPosition(pos: Int) = promos.filter(_.topPosition == pos).filter(_.isSublink)
+    def sublinksForPosition(pos: Position) = promos.filter(_.pos.idx == pos.idx).filter(_.isSublink)
   }
 
   def intent = {
@@ -31,8 +31,8 @@ class Controller extends unfiltered.filter.Plan {
       val availableScans = Store.findScanDates(url).map { case (d, key) => AvailableScan(url, d, key) }
 
       val componentInfo: Option[List[Component]] = optKey.map { key =>
-        Store.findPromotions(key).groupBy(_.component).map {  case (name, promos) =>
-          Component(name, promos.sortBy(p => (p.topPosition, p.sublinkPosition) ))
+        Store.findPromotions(key).groupBy(_.pos.component).map {  case (name, promos) =>
+          Component(name, promos.sortBy(_.pos))
         }.toList.sortBy(_.name)
       }
 

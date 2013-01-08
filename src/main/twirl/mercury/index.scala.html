@@ -6,7 +6,7 @@
   <h3>Show snapshots (mainly useful for debugging)</h3>
 
   <ol>
-      @for(p <- mercury.Pages.all) {
+      @for(p <- mercury.Page.all) {
         <li><a href="/snapshot?url=@p.url">@p.name</a></li>
       }
   </ol>

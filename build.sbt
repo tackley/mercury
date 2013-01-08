@@ -7,7 +7,8 @@ scalaVersion := "2.10.0"
 libraryDependencies ++= Seq(
     "org.joda" % "joda-convert" % "1.1" % "provided",
     "joda-time" % "joda-time" % "2.0",
-    "net.databinder" %% "unfiltered-filter" % "0.6.4",
+    "net.databinder" %% "unfiltered-filter" % "0.6.5",
+    "io.spray" %%  "spray-json" % "1.2.3",
     "org.slf4j" % "slf4j-api" % "1.7.2",
     "org.slf4j" % "slf4j-jdk14" % "1.7.2",
     "com.google.appengine" % "appengine-api-1.0-sdk" % "1.7.2.1",

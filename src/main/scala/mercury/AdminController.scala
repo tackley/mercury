@@ -13,7 +13,7 @@ class AdminController extends unfiltered.filter.Plan {
 
   def intent = {
     case GET(Path("/admin/cron/scan") & Params(p)) =>
-      val scanInitiated = for (p <- Pages.all) yield {
+      val scanInitiated = for (p <- Page.all) yield {
         queue.add(withUrl("/admin/task/scan").param("url", p.url.toString))
         p.name
       }
@@ -21,13 +21,14 @@ class AdminController extends unfiltered.filter.Plan {
       ResponseString("Scan tasks queued: " + scanInitiated.mkString(", "))
 
     case POST(Path("/admin/task/scan") & Params(p)) =>
-      val url = p("url").headOption.map(new URL(_)).getOrElse(sys.error("url expected"))
+      val url = p("url").headOption.getOrElse(sys.error("url expected"))
+      val page = Page.fromUrl(url)
 
-      log.info("Scanning {}...", url)
+      log.info("Scanning {}...", page)
 
-      val promotions = PageScanner.findPromotions(url)
+      val promotions = PageScanner.findPromotions(page)
 
-      Store.write(url, promotions)
+      Store.write(page.url, promotions)
 
       ResponseString(promotions.toList.map(_.pretty).sorted.mkString("\n"))
 

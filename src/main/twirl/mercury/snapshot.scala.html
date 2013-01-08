@@ -5,7 +5,7 @@
 @main("Show Snaphots") {
   <h1>Show Snapshots for @url</h1>
 
-  <div id="available-scans">
+  <div id="available-scans" style="float: left">
       <ol>
           @for(scan <- availableScans) {
             <li><a href="@scan.snapshotUrl">@scan.niceDate</a></li>
@@ -14,7 +14,7 @@
   </div>
 
   @for(components <- optComponents) {
-    <div id="components">
+    <div id="components" style="float: right">
         @for(component <- components) {
            <h3>@component.name</h3>
 
@@ -23,8 +23,8 @@
                  <li><a href="@promo.targetUrl">@promo.targetUrl</a></li>
 
                  <ol>
-                     @for(sublink <- component.sublinksForPosition(promo.topPosition)) {
-                        <li><a href="@sublink.targetUrl">@sublink.targetUrl</a></li>
+                     @for(sublink <- component.sublinksForPosition(promo.pos)) {
+                        <li><a href="@sublink.targetUrl">@sublink.targetUrl<x/a></li>
                      }
                  </ol>
                }

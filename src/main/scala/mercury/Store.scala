@@ -12,23 +12,26 @@ object Store {
   private val log = LoggerFactory.getLogger(getClass)
   private val ds = DatastoreServiceFactory.getDatastoreService
 
+  implicit class UrlToGaeLink(url: URL) {
+    def asLink: GaeLink = new GaeLink(url.toString)
+  }
+
   def write(scannedUrl: URL, promotedLinks: Set[Promotion]) {
     log.info("Writing {} links to store...", promotedLinks.size)
 
     val scanEntity = new Entity("scan")
     scanEntity.setProperty("dt", promotedLinks.head.dt.toDate)
-    scanEntity.setProperty("srcUrl", new GaeLink(promotedLinks.head.srcUrl))
+    scanEntity.setProperty("srcUrl", scannedUrl.asLink)
     val scanKey = ds.put(scanEntity)
 
     val promoEntities = for (link <- promotedLinks) yield {
       val promoEntity = new Entity("promo", scanKey)
       promoEntity.setProperty("dt", link.dt.toDate)
-      promoEntity.setProperty("srcUrl", new GaeLink(link.srcUrl))
+      promoEntity.setProperty("srcUrl", link.pos.src.url.asLink)
       promoEntity.setProperty("targetUrl", new GaeLink(link.targetUrl))
-      promoEntity.setProperty("position", link.positionInWords)
-      promoEntity.setProperty("component", link.component)
-      promoEntity.setProperty("topPosition", link.topPosition)
-      link.sublinkPosition.foreach(promoEntity.setProperty("sublinkPosition", _))
+      promoEntity.setProperty("component", link.pos.component)
+      promoEntity.setProperty("topPosition", link.pos.idx)
+      link.pos.sublinkIdx.foreach(promoEntity.setProperty("sublinkPosition", _))
       promoEntity
     }
 
@@ -38,13 +41,17 @@ object Store {
   }
 
   private def parsePromotionEntity(e: Entity): Promotion = {
+    val pos = Position(
+      src = Page.fromUrl(e.getProperty("srcUrl").asInstanceOf[GaeLink].getValue),
+      component = e.getProperty("component").toString,
+      idx = e.getProperty("topPosition").asInstanceOf[Long].toInt,
+      sublinkIdx = Option(e.getProperty("sublinkPosition")).map(_.asInstanceOf[Long].toInt)
+    )
+
     Promotion(
       dt = new DateTime(e.getProperty("dt").asInstanceOf[Date]),
-      srcUrl = e.getProperty("srcUrl").asInstanceOf[GaeLink].getValue,
       targetUrl = e.getProperty("targetUrl").asInstanceOf[GaeLink].getValue,
-      component = e.getProperty("component").toString,
-      topPosition = e.getProperty("topPosition").asInstanceOf[Long].toInt,
-      sublinkPosition = Option(e.getProperty("sublinkPosition")).map(_.asInstanceOf[Long].toInt)
+      pos = pos
     )
   }
 
