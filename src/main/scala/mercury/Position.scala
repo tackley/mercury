@@ -7,8 +7,9 @@ case class Position(
   idx: Int,
   sublinkIdx: Option[Int]
 ) {
-  def positionInWords = "\"" + component + "\" position " + idx +
-    sublinkIdx.map(" sublink " + _).getOrElse("")
+  def inWords =
+    s"""${src.name} "${component}" position $idx""" +
+      sublinkIdx.map(" sublink " + _).getOrElse("")
 
   def isSublink = sublinkIdx.isDefined
 }

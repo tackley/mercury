@@ -16,6 +16,10 @@ object Store {
     def asLink: GaeLink = new GaeLink(url.toString)
   }
 
+  implicit class StringToGaeLink(url: String) {
+    def asLink: GaeLink = new GaeLink(url)
+  }
+
   def write(scannedUrl: URL, promotedLinks: Set[Promotion]) {
     log.info("Writing {} links to store...", promotedLinks.size)
 
@@ -28,7 +32,7 @@ object Store {
       val promoEntity = new Entity("promo", scanKey)
       promoEntity.setProperty("dt", link.dt.toDate)
       promoEntity.setProperty("srcUrl", link.pos.src.url.asLink)
-      promoEntity.setProperty("targetUrl", new GaeLink(link.targetUrl))
+      promoEntity.setProperty("targetUrl", link.targetUrl.asLink)
       promoEntity.setProperty("component", link.pos.component)
       promoEntity.setProperty("topPosition", link.pos.idx)
       link.pos.sublinkIdx.foreach(promoEntity.setProperty("sublinkPosition", _))
@@ -57,7 +61,7 @@ object Store {
 
   def findScanDates(scannedUrl: String): List[(DateTime, Key)] = {
     val q = new Query("scan")
-      .setFilter(new FilterPredicate("srcUrl", FilterOperator.EQUAL, new GaeLink(scannedUrl)))
+      .setFilter(new FilterPredicate("srcUrl", FilterOperator.EQUAL, scannedUrl.asLink))
       .addSort("dt", SortDirection.DESCENDING)
 
     ds.prepare(q).asIterable(FetchOptions.Builder.withLimit(50)).asScala.map { e =>
@@ -69,7 +73,7 @@ object Store {
   def findPromotions(key: Key): List[Promotion] = {
     val q = new Query("promo").setAncestor(key)
 
-    ds.prepare(q) .asIterable.asScala.map(parsePromotionEntity).toList
+    ds.prepare(q).asIterable.asScala.map(parsePromotionEntity).toList
   }
 
   def findHistory(url: String): List[Promotion] = {

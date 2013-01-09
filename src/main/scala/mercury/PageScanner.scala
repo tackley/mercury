@@ -14,7 +14,7 @@ case class Promotion(
 ) {
   def pretty = positionInWords + " => " + targetUrl
 
-  def positionInWords = pos.positionInWords
+  def positionInWords = pos.inWords
 
   def isSublink = pos.isSublink
 

@@ -1,11 +1,11 @@
-@(url: String, promos: List[mercury.Promotion])
+@(url: String, historyEntries: List[mercury.HistoryEntry])
 
 @main("Show History") {
   <h1>Show History for @url</h1>
 
   <ol>
-    @for(promo <- promos) {
-       <li>@promo.dt: @promo.src @promo.positionInWords</li>
+    @for(entry <- historyEntries) {
+       <li>@entry.from -> @entry.to: @entry.pos.inWords</li>
     }
   </ol>
 

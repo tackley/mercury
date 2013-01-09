@@ -19,7 +19,7 @@ libraryDependencies ++= Seq(
 
 libraryDependencies += "org.eclipse.jetty" % "jetty-webapp" % "7.6.8.v20121106" % "container"
 
-scalacOptions += "-feature"
+scalacOptions ++= Seq("-feature", "-deprecation")
 
 appengineSettings
 

@@ -41,7 +41,7 @@ class Controller extends unfiltered.filter.Plan {
     case GET(Path("/history") & Params(p)) =>
       val url = p("url").headOption getOrElse sys.error("missing url")
 
-      val history: List[Promotion] = Store.findHistory(url).sortBy(-_.dt.getMillis)
+      val history: List[HistoryEntry] = HistoryAggregator.aggregate(Store.findHistory(url))
 
       ResponseString(html.history.render(url, history).body) ~> HtmlContent
   }
