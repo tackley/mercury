@@ -12,13 +12,9 @@ case class Promotion(
   targetUrl: String,
   pos: Position
 ) {
-  def pretty = positionInWords + " => " + targetUrl
-
-  def positionInWords = pos.inWords
+  def pretty = pos.inWords + " => " + targetUrl
 
   def isSublink = pos.isSublink
-
-  def src = pos.src
 }
 
 object PageScanner {
@@ -50,7 +46,7 @@ object PageScanner {
     }
 
 
-    val grouped: Map[Option[String], Seq[SimpleLink]] = links.groupBy { _.componentName }
+    val grouped = links.groupBy(_.componentName)
 
     val dt = DateTime.now
 

@@ -3,6 +3,7 @@ package mercury
 import org.joda.time.DateTime
 
 case class HistoryEntry(
+  targetUrl: String,
   from: DateTime,
   to: DateTime,
   pos: Position)
@@ -21,11 +22,11 @@ object HistoryAggregator {
     p.sortBy(_.dt).foldLeft(List[HistoryEntry]()) { case (acc, promo) =>
       acc match {
         case Nil =>
-          List(HistoryEntry(promo.dt, promo.dt, promo.pos))
-        case HistoryEntry(from, to, pos) :: tail if promo.dt.minusMinutes(8).isBefore(to) =>
-          HistoryEntry(from, promo.dt, pos) :: tail
+          List(HistoryEntry(promo.targetUrl, promo.dt, promo.dt, promo.pos))
+        case HistoryEntry(target, from, to, pos) :: tail if promo.dt.minusMinutes(8).isBefore(to) =>
+          HistoryEntry(target, from, promo.dt, pos) :: tail
         case other =>
-          HistoryEntry(promo.dt, promo.dt, promo.pos) :: other
+          HistoryEntry(promo.targetUrl, promo.dt, promo.dt, promo.pos) :: other
       }
     }
   }

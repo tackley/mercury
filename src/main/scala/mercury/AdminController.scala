@@ -12,7 +12,7 @@ class AdminController extends unfiltered.filter.Plan {
   private val queue = QueueFactory.getQueue("scan-queue")
 
   def intent = {
-    case GET(Path("/admin/cron/scan") & Params(p)) =>
+    case GET(Path("/admin/cron/scan")) =>
       val scanInitiated = for (p <- Page.all) yield {
         queue.add(withUrl("/admin/task/scan").param("url", p.url.toString))
         p.name

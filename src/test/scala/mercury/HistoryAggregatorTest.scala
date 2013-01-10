@@ -22,7 +22,7 @@ class HistoryAggregatorTest extends FlatSpec with ShouldMatchers {
     )
 
     val history = HistoryAggregator.aggregate(promos)
-    history should be (List(HistoryEntry(startDate, startDate.plusMinutes(15), pos)))
+    history should be (List(HistoryEntry(url, startDate, startDate.plusMinutes(15), pos)))
   }
 
   it should "keep different entries separate" in {
@@ -38,8 +38,8 @@ class HistoryAggregatorTest extends FlatSpec with ShouldMatchers {
     )
 
     HistoryAggregator.aggregate(promos) should be (List(
-      HistoryEntry(startDate, startDate.plusMinutes(5), pos2),
-      HistoryEntry(startDate.plusMinutes(10), startDate.plusMinutes(15), pos1)
+      HistoryEntry(url, startDate, startDate.plusMinutes(5), pos2),
+      HistoryEntry(url, startDate.plusMinutes(10), startDate.plusMinutes(15), pos1)
     ))
 
   }
