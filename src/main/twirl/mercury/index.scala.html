@@ -3,12 +3,14 @@
 
   <h2>A Time Machine inspired by <em>Hg</em> Wells</h2>
 
-  <h3>Show snapshots (mainly useful for debugging)</h3>
+  <h3>Paste a url in here to see history</h3>
 
-  <ol>
-      @for(p <- mercury.Page.all) {
-        <li><a href="/snapshot?url=@p.url">@p.name</a></li>
-      }
-  </ol>
+  <form method="GET" action="/history">
+      <label>
+          Url
+          <input name="url" type="url" size="200">
+      </label>
+      <input type="submit" value="Jump It">
+  </form>
 
 }

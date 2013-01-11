@@ -24,24 +24,10 @@ class Controller extends unfiltered.filter.Plan {
     case GET(Path("/")) =>
       ResponseString(html.index.render().body) ~> HtmlContent
 
-    case GET(Path("/snapshot") & Params(p)) =>
-      val url = p("url").headOption getOrElse sys.error("missing url")
-      val optKey = p("key").headOption.map(KeyFactory.stringToKey)
-
-      val availableScans = Store.findScanDates(url).map { case (d, key) => AvailableScan(url, d, key) }
-
-      val componentInfo: Option[List[Component]] = optKey.map { key =>
-        Store.findPromotions(key).groupBy(_.pos.component).map {  case (name, promos) =>
-          Component(name, promos.sortBy(_.pos))
-        }.toList.sortBy(_.name)
-      }
-
-      ResponseString(html.snapshot.render(url, availableScans, componentInfo).body) ~> HtmlContent
-
     case GET(Path("/history") & Params(p)) =>
       val url = p("url").headOption getOrElse sys.error("missing url")
 
-      val history: List[HistoryEntry] = HistoryAggregator.aggregate(Store.findHistory(url))
+      val history: List[HistoryEntry] = Store.findHistory(url)
 
       ResponseString(html.history.render(url, history).body) ~> HtmlContent
   }

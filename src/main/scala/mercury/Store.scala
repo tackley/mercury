@@ -10,6 +10,7 @@ import com.google.appengine.api.datastore
 import datastore.Query.{CompositeFilterOperator, SortDirection, FilterOperator, FilterPredicate}
 
 object Store {
+
   private val log = LoggerFactory.getLogger(getClass)
   private val ds = DatastoreServiceFactory.getDatastoreService
 
@@ -26,31 +27,6 @@ object Store {
     log.info("Writing {} links to store...", promotedLinks.size)
 
     val dt = promotedLinks.head.dt
-
-    val scanEntity = new Entity("scan")
-    scanEntity.setProperty("dt", dt.toDate)
-    scanEntity.setProperty("srcUrl", scannedUrl.asLink)
-    val scanKey = ds.put(scanEntity)
-
-    val promoEntities = for (link <- promotedLinks) yield {
-      val promoEntity = new Entity("promo", scanKey)
-      promoEntity.setProperty("dt", link.dt.toDate)
-      promoEntity.setProperty("targetUrl", link.targetUrl.asLink)
-      writePosition(link.pos, promoEntity)
-      promoEntity
-    }
-
-    ds.put(promoEntities.asJava)
-
-    log.info("now doing updates")
-
-    // so perhaps a better way would be to store the equivalent of "HistoryEntry"
-    // in the datastore:
-    //  - for each link on the page, see if there is an entry in the datastore
-    //     with the same page, position and link, with a "to" date in the last
-    //     scaninterval + 50%
-    //  - if so, update
-    //  - else write a new one
     val lastScanWithin = dt.minusMinutes(8)
 
     val historyEntities = for (link <- promotedLinks) yield {
@@ -106,38 +82,21 @@ object Store {
     p.sublinkIdx.foreach(e.setProperty("sublinkPosition", _))
   }
 
-  private def parsePromotionEntity(e: Entity): Promotion = {
-    val pos = parsePositionFromEntity(e)
-
-    Promotion(
-      dt = new DateTime(e.getProperty("dt").asInstanceOf[Date]),
+  private def readHistoryEntry(e: Entity): HistoryEntry = {
+    HistoryEntry(
+      from = new DateTime(e.getProperty("from").asInstanceOf[Date]),
+      to = new DateTime(e.getProperty("to").asInstanceOf[Date]),
       targetUrl = e.getProperty("targetUrl").asInstanceOf[GaeLink].getValue,
-      pos = pos
+      pos = parsePositionFromEntity(e)
     )
   }
 
-  def findScanDates(scannedUrl: String): List[(DateTime, Key)] = {
-    val q = new Query("scan")
-      .setFilter(new FilterPredicate("srcUrl", FilterOperator.EQUAL, scannedUrl.asLink))
-      .addSort("dt", SortDirection.DESCENDING)
 
-    ds.prepare(q).asIterable(FetchOptions.Builder.withLimit(50)).asScala.map { e =>
-      new DateTime(e.getProperty("dt").asInstanceOf[Date]) -> e.getKey
-    }.toList
-  }
+  def findHistory(url: String): List[HistoryEntry] = {
+    val q = new Query("history")
+      .setFilter(FilterOperator.EQUAL.of("targetUrl", url.asLink))
 
-
-  def findPromotions(key: Key): List[Promotion] = {
-    val q = new Query("promo").setAncestor(key)
-
-    ds.prepare(q).asIterable.asScala.map(parsePromotionEntity).toList
-  }
-
-  def findHistory(url: String): List[Promotion] = {
-    val q = new Query("promo")
-      .setFilter(new FilterPredicate("targetUrl", FilterOperator.EQUAL, new GaeLink(url)))
-
-    ds.prepare(q).asIterable().asScala.map(parsePromotionEntity).toList
+    ds.prepare(q).asIterable.asScala.map(readHistoryEntry).toList
   }
 
 

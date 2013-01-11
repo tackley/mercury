@@ -1,9 +1,17 @@
 @(url: String, historyEntries: List[mercury.HistoryEntry])
 
 @main("Show History") {
-  <h1>Show History for @url</h1>
+  <h1>History</h1>
 
-  <ol>
+    <form method="GET">
+        <label>
+            Url
+            <input name="url" type="url" size="200" value="@url">
+        </label>
+        <input type="submit" value="Jump It">
+    </form>
+
+<ol>
     @for(entry <- historyEntries) {
        <li>@entry.from -> @entry.to: @entry.pos.inWords</li>
     }
