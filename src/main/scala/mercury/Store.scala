@@ -27,7 +27,7 @@ object Store {
     log.info("Writing {} links to store...", promotedLinks.size)
 
     val dt = promotedLinks.head.dt
-    val lastScanWithin = dt.minusMinutes(8)
+    val lastScanWithin = dt.minus(Config.readingIsLatestIfWithin)
 
     val historyEntities = for (link <- promotedLinks) yield {
       val entity = findHistoryEntity(link, lastScanWithin) getOrElse {

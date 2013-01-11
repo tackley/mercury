@@ -6,6 +6,7 @@ import org.joda.time.format.ISODateTimeFormat
 import unfiltered.response.ResponseString
 import org.joda.time.DateTime
 import com.google.appengine.api.datastore.{KeyFactory, Key}
+import java.net.URL
 
 class Controller extends unfiltered.filter.Plan {
   val dateFormat = ISODateTimeFormat.dateTimeNoMillis()
@@ -20,6 +21,7 @@ class Controller extends unfiltered.filter.Plan {
     def sublinksForPosition(pos: Position) = promos.filter(_.pos.idx == pos.idx).filter(_.isSublink)
   }
 
+
   def intent = {
     case GET(Path("/")) =>
       ResponseString(html.index.render().body) ~> HtmlContent
@@ -30,6 +32,58 @@ class Controller extends unfiltered.filter.Plan {
       val history: List[HistoryEntry] = Store.findHistory(url)
 
       ResponseString(html.history.render(url, history).body) ~> HtmlContent
+
+    case GET(Path("/history.json") & Params(p)) =>
+      val url = p("url").headOption getOrElse sys.error("missing url")
+      val callback = p("callback").headOption
+      val history = Store.findHistory(url)
+
+      val json = renderJsonResponse(history)
+
+      callback.map(
+        c => ResponseString(s"$c($json)") ~> JsContent
+      ) getOrElse (
+        ResponseString(json) ~> JsonContent
+      )
+
   }
+
+  def renderJsonResponse(entries: List[HistoryEntry]): String = {
+    import spray.json._
+    import spray.json.DefaultJsonProtocol._
+
+    case class HistoryResponse(
+      from: Long,
+      to: Long,
+
+      formattedFrom: String,
+      formattedTo: String,
+
+      srcPageName: String,
+      srcPageUrl: String,
+
+      component: String,
+      idx: Int,
+      sublinkIdx: Option[Int]
+    )
+    implicit val historyResponseFormat = jsonFormat9(HistoryResponse)
+
+    val responses = for (entry <- entries) yield {
+      HistoryResponse(
+        from = entry.from.getMillis,
+        to = entry.from.getMillis,
+        formattedFrom = RelativeDateTimeFormatter.print(entry.from),
+        formattedTo = RelativeDateTimeFormatter.print(entry.to),
+        srcPageName = entry.pos.src.name,
+        srcPageUrl = entry.pos.src.url.toString,
+        component = entry.pos.component,
+        idx = entry.pos.idx,
+        sublinkIdx = entry.pos.sublinkIdx
+      )
+    }
+
+    responses.toJson.compactPrint
+  }
+
 
 }
