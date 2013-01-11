@@ -15,5 +15,5 @@ case class Position(
 }
 
 object Position {
-  implicit val defaultOrdering: Ordering[Position] = Ordering.by(p => (p.idx, p.sublinkIdx))
+  implicit val defaultOrdering: Ordering[Position] = Ordering.by(p => (p.component, p.idx, p.sublinkIdx))
 }

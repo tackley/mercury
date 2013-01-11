@@ -1,0 +1,24 @@
+@(url: String, promos: List[mercury.Promotion])
+@import mercury._
+
+@main("Forced scan") {
+  <h1>Manual Scan</h1>
+
+    <form method="GET">
+        <label>
+            Url
+            <input name="url" type="url" size="200" value="@url">
+        </label>
+        <input type="submit" value="Jump It">
+    </form>
+
+
+<ol>
+    @for(entry <- promos) {
+       <li>@entry.pretty</li>
+    }
+  </ol>
+
+
+
+}

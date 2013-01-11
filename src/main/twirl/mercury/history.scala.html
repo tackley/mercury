@@ -1,4 +1,5 @@
 @(url: String, historyEntries: List[mercury.HistoryEntry])
+@import mercury._
 
 @main("Show History") {
   <h1>History</h1>
@@ -11,11 +12,18 @@
         <input type="submit" value="Jump It">
     </form>
 
+
 <ol>
     @for(entry <- historyEntries) {
-       <li>@entry.from -> @entry.to: @entry.pos.inWords</li>
+       <li>@RelativeDateTimeFormatter.print(entry.from) -> @RelativeDateTimeFormatter.print(entry.to): @entry.pos.inWords</li>
     }
   </ol>
+
+  @if(!url.isEmpty) {
+      <p>
+          <a href="http://dashboard.ophan.co.uk/graph/breakdown?url=@url&by=referrer">See the ophan graph for this content</a>
+      </p>
+  }
 
 
 }

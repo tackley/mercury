@@ -27,11 +27,14 @@ class Controller extends unfiltered.filter.Plan {
       ResponseString(html.index.render().body) ~> HtmlContent
 
     case GET(Path("/history") & Params(p)) =>
-      val url = p("url").headOption getOrElse sys.error("missing url")
+      val url = p("url").headOption
 
-      val history: List[HistoryEntry] = Store.findHistory(url)
 
-      ResponseString(html.history.render(url, history).body) ~> HtmlContent
+      val history: List[HistoryEntry] = url.map {
+        Store.findHistory(_).sortBy(_.to)
+      } getOrElse Nil
+
+      ResponseString(html.history.render(url.getOrElse(""), history).body) ~> HtmlContent
 
     case GET(Path("/history.json") & Params(p)) =>
       val url = p("url").headOption getOrElse sys.error("missing url")
@@ -45,6 +48,16 @@ class Controller extends unfiltered.filter.Plan {
       ) getOrElse (
         ResponseString(json) ~> JsonContent
       )
+
+    case GET(Path("/scan") & Params(p)) =>
+      val url = p("url").headOption
+
+      val promos = url.map { u =>
+        PageScanner.findPromotions(Page.fromUrl(u)).toList.sortBy(_.pos)
+      } getOrElse Nil
+
+      ResponseString(html.scan.render(url getOrElse "", promos).body) ~> HtmlContent
+
 
   }
 
