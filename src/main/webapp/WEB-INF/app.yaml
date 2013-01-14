@@ -1,4 +1,4 @@
-application: e~gu-mercury
+application: gt-mercury
 version: 1
 runtime: java
 threadsafe: true
