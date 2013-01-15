@@ -50,19 +50,22 @@ object Store {
 
   private def findHistoryEntity(promotion: Promotion, since: DateTime): Option[Entity] = {
     val filters = List(
-      FilterOperator.EQUAL.of("srcUrl", promotion.pos.src.url.asLink),
-      FilterOperator.EQUAL.of("component", promotion.pos.component),
-      FilterOperator.EQUAL.of("topPosition", promotion.pos.idx.toLong),
+      FilterOperator.EQUAL.of("pos", promotion.pos.inWords),
       FilterOperator.EQUAL.of("targetUrl", promotion.targetUrl.asLink),
       FilterOperator.GREATER_THAN_OR_EQUAL.of("to", since.toDate)
-    ) ++ promotion.pos.sublinkIdx.map { idx =>
-      FilterOperator.EQUAL.of("sublinkPosition", idx.toLong)
-    }
+    )
 
     val q = new Query("history")
       .setFilter(CompositeFilterOperator.and(filters: _*))
+      .addSort("to", Query.SortDirection.DESCENDING)
 
-    Option(ds.prepare(q).asSingleEntity())
+    val result = ds.prepare(q).asIterator.asScala.toList
+
+    if (result.size > 1) {
+      log.warn(s"Oh. I got ${result.size} history entries back for $promotion since $since:\n${result.mkString("\n")}")
+    }
+
+    result.headOption
   }
 
 
@@ -80,6 +83,7 @@ object Store {
     e.setProperty("component", p.component)
     e.setProperty("topPosition", p.idx)
     p.sublinkIdx.foreach(e.setProperty("sublinkPosition", _))
+    e.setProperty("pos", p.inWords)
   }
 
   private def readHistoryEntry(e: Entity): HistoryEntry = {

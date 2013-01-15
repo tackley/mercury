@@ -9,9 +9,9 @@ object RelativeDateTimeFormatter {
     if (dt.isAfter(relativeTo.minus(Config.readingIsLatestIfWithin)))
       "now"
     else if (d.getStandardDays > 0)
-      dt.toString("d MMM YY HH:mm:ss")
+      dt.toString("d MMM HH:mm")
     else
-      dt.toString("HH:mm:ss")
+      dt.toString("HH:mm")
   }
 
 

@@ -3,18 +3,8 @@ indexes:
   - kind: history
     ancestor: no
     properties:
-      -  name: component
-      -  name: srcUrl
-      -  name: targetUrl
-      -  name: topPosition
-      -  name: to
-    
-  - kind: history
-    ancestor: no
-    properties:
-      -  name: component
-      -  name: srcUrl
-      -  name: sublinkPosition
-      -  name: targetUrl
-      -  name: topPosition
-      -  name: to
+      - name: targetUrl
+      - name: pos
+      - name: to
+        direction: desc
+
