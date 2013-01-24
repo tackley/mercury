@@ -84,7 +84,7 @@ class Controller extends unfiltered.filter.Plan {
     val responses = for (entry <- entries) yield {
       HistoryResponse(
         from = entry.from.getMillis,
-        to = entry.from.getMillis,
+        to = entry.to.getMillis,
         formattedFrom = RelativeDateTimeFormatter.print(entry.from),
         formattedTo = RelativeDateTimeFormatter.print(entry.to),
         srcPageName = entry.pos.src.name,
