@@ -7,6 +7,7 @@ import com.amazonaws.services.s3.AmazonS3Client
 import org.joda.time.format.DateTimeFormatterBuilder
 import com.amazonaws.util.StringInputStream
 import com.amazonaws.services.s3.model.{CannedAccessControlList, PutObjectRequest, ObjectMetadata}
+import java.io.File
 
 object DataStore {
 
@@ -48,7 +49,7 @@ object DataStore {
   def mkPath(dt: DateTime, url: String, qualifier: String, extension: String): Path =
     Path(bucket, s"$url/${dt.toString(pathDateFormat)}_$qualifier.$extension", extension)
 
-  def write(p: Path, data: String) = {
+  def write(p: Path, data: String): String = {
     log.info(s"write to $p...")
 
     val s = new StringInputStream(data)
@@ -65,4 +66,22 @@ object DataStore {
 
     p.url
   }
+
+  def write(p: Path, file: File): String = {
+    log.info(s"write to $p...")
+
+
+    val md = new ObjectMetadata()
+    md.setContentType(p.contentType)
+
+    val putObjReq = new PutObjectRequest(p.bucket, p.key, file)
+      .withMetadata(md)
+      .withCannedAcl(CannedAccessControlList.PublicRead)
+
+    s3.putObject(putObjReq)
+    log.info(s" -> done, url is ${p.url}")
+
+    p.url
+  }
+
 }
