@@ -8,133 +8,58 @@ import org.jsoup.Jsoup
 import collection.JavaConversions._
 import scalax.io.Resource
 import org.jsoup.nodes.Node
-import org.apache.commons.lang.StringUtils
-import org.joda.time.DateTime
+import org.joda.time.{DateTimeZone, DateTime}
 
-import org.elasticsearch.search.sort._
-import difflib.DiffUtils
+import javax.swing.SortOrder
+import java.util.TimeZone
+import play.api.Logger
+import play.api.http.HeaderNames._
 
-class Poller(url: String)(implicit actorSys: ActorSystem) {
-  private val log = Logging(actorSys, this.getClass)
-  var lastVersion = latestHtml
+class Poller(loc: ScannedLocation)(implicit actorSys: ActorSystem) {
 
-  private def latestHtml = {
-    try {
-      ElasticSearch.client
-        .prepareSearch("time-machine")
-        .addSort("dt", SortOrder.DESC)
-        .addField("diffHtml")
-        .setTypes("nf")
-        .execute()
-        .get()
-        .hits()
-        .headOption
-        .map(h => stringToLines(h.field("diffHtml").value[String]()))
-        .getOrElse(Nil)
-    } catch {
-      case e: Exception =>
-        log.error(e, "failed to get old data from elasticsearch")
-        Nil
-    }
-  }
-
-  log.info("last version = " + lastVersion)
-
-  private def removeComments(node: Node) {
-    for (child <- node.childNodes().toList) {
-      if (child.nodeName() == "#comment")
-        child.remove()
-      else
-        removeComments(child)
-    }
-  }
-
-  private def stringToLines(s: String): List[String] = s.split("\n").toList.map(_.trim)
+  private val log = Logger(getClass)
 
   def poll() {
-    import HeaderNames._
+
+    val now = DateTime.now(DateTimeZone.UTC)
+
+    log.info(s"Checking if should run (${now.getMinuteOfHour})...")
+
+    // every 5 minutes only
+    if (now.getMinuteOfHour % 5 == 0) {
+      try {
+        doPoll(now)
+      } catch {
+        case e: Exception =>
+          log.warn("poll failed", e)
+      }
+
+    }
+
+  }
+
+
+  private def doPoll(dt: DateTime) {
+    import play.api.libs.concurrent.Execution.Implicits._
 
     log.info("Polling...")
 
-    WS.url(url)
+    WS.url(loc.url)
       .withHeaders(USER_AGENT -> "Network Front Time Machine; contact graham.tackley@guardian.co.uk")
       .get()
       .map { r =>
         log.info("Parsing...")
-        val doc = Jsoup.parse(r.body, url)
 
-        // create a copy of the doc that we'll do a diff on
-        val diffDoc = doc.clone()
+        val doc = Jsoup.parse(r.body, loc.url)
 
-        // eliminate automated stuff
-        diffDoc.select(".most-viewed, .m-zeitgeist").remove()
+        DataStore.write(DataStore.mkPath(dt, loc.bucketPrefix, "raw", "html"), doc.toString)
+        doc.select("script, noscript").remove()
 
-        // elimitae "last updated 6 mins ago"
-        diffDoc.select(".accolade, .last-updated").remove()
-
-        // scripts contain random stuff like the server that generated the request
-        diffDoc.select("script").remove()
-
-        // soulmates update regularly
-        diffDoc.select(".soulmate").remove()
-
-        // not interested in ticker changes
-        diffDoc.select("#ticker").remove()
-
-        // nor the auto rotating ventures slot machine
-        diffDoc.select(".ventures-slot-machine").remove()
-
-        // the omniture url in the noscript tag changes
-        diffDoc.select("noscript").remove()
-
-        // the id of the video tag changes
-        diffDoc.select(".video-player").removeAttr("id")
-
-        // not really interested when the weather forecast changes
-        diffDoc.select("#weather-header").remove()
-
-        // not interested in comment changes
-        removeComments(diffDoc)
-
-        val docString = stringToLines(diffDoc.outerHtml())
-
-        println("calculating diff...")
-
-        val diffs = DiffUtils.diff(lastVersion, docString).getDeltas
-        println("delta size is " + diffs.size)
-
-        for (diff <- diffs) {
-          println("original:")
-          println(diff.getOriginal)
-          println("revised:")
-          println(diff.getRevised)
-        }
-
-        if (diffs.size > 0) {
-
-          lastVersion = docString
-
-          val dt = DateTime.now()
-          val id = dt.getMillis.toString
-
-          ElasticSearch.client.prepareIndex("time-machine", "nf", id)
-            .setSource(Map[String, AnyRef](
-              "html" -> doc.outerHtml(),
-              "diffHtml" -> docString.mkString("\n"),
-              "linesChanged" -> (diffs.size: java.lang.Integer),
-              "dt" -> dt
-            ))
-            .execute()
-            .get()
-
-          log.info("Written")
-
-        } else {
-          log.info("Same!")
-        }
-
+        DataStore.write(DataStore.mkPath(dt, loc.bucketPrefix, "noscript", "html"), doc.toString)
       }
-
+      .onFailure {
+        case e => log.warn("poll failed", e)
+      }
   }
 
 }

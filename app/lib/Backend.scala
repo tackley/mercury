@@ -3,14 +3,15 @@ package lib
 import play.api.libs.concurrent.Akka
 import play.api.Play.current
 
-import akka.util.duration._
+import scala.concurrent.duration._
 
 object Backend {
-  val poller = new Poller("http://www.guardian.co.uk")(Akka.system)
+  import play.api.libs.concurrent.Execution.Implicits._
+
+  val poller = new Poller(ScannedLocation.ukNetworkFront)(Akka.system)
 
   def start() {
-
-    Akka.system.scheduler.schedule(5 seconds, 30 seconds) {
+    Akka.system.scheduler.schedule(5.seconds, 1.minutes) {
       poller.poll()
     }
   }

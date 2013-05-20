@@ -8,13 +8,11 @@ object ApplicationBuild extends Build {
     val appVersion      = "1.0-SNAPSHOT"
 
     val appDependencies = Seq(
-      "org.jsoup" % "jsoup" % "1.6.1",
-      "org.elasticsearch" % "elasticsearch" % "0.19.8",
-      "org.elasticsearch" % "elasticsearch-cloud-aws" % "1.6.0",
-      "com.googlecode.java-diff-utils" % "diffutils" % "1.2.1"
+      "org.jsoup" % "jsoup" % "1.7.2",
+      "com.amazonaws" % "aws-java-sdk" % "1.4.3"
     )
 
-    val main = PlayProject(appName, appVersion, appDependencies, mainLang = SCALA).settings(
+    val main = play.Project(appName, appVersion, appDependencies).settings(
       // Add your own project settings here      
     )
 

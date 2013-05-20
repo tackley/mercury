@@ -1,22 +1,15 @@
 package controllers
 
-import play.api._
 import play.api.mvc._
-import lib.ElasticSearch
-import org.elasticsearch.search.sort.SortOrder
-import collection.JavaConversions._
-import org.joda.time.DateTime
-import org.jsoup.Jsoup
-import org.elasticsearch.search.SearchHit
 
-class Revision(hit: SearchHit) {
-  lazy val id = hit.getId
-  lazy val dt = new DateTime(hit.getId.toLong).toString("d MMM HH:mm")
-  lazy val changes = hit.field("linesChanged").value().toString
-}
 
 object Application extends Controller {
-  
+
+  def index = Action {
+    NotImplemented("Yet")
+  }
+
+  /*
   def index = Action {
     val revisions = ElasticSearch.client
       .prepareSearch("time-machine")
@@ -49,4 +42,5 @@ object Application extends Controller {
 
     Ok(doc.outerHtml()).as("text/html")
   }
+  */
 }
