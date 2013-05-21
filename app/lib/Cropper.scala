@@ -14,7 +14,7 @@ object Cropper {
 
     // and now crop!
     log.info("Loading to crop...")
-    val cropHeight = 800
+    val cropHeight = 1200
 
     val cropFile = (tmpDir / "crop.png").fileOption.get
     val thumbFile = (tmpDir / "thumb.png").fileOption.get

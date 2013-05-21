@@ -1,7 +1,7 @@
 package controllers
 
 import play.api.mvc._
-import lib.DataStore
+import lib.{ScannedLocation, DataStore}
 import org.joda.time.LocalDate
 import org.joda.time.format.DateTimeFormatterBuilder
 
@@ -38,7 +38,7 @@ object Application extends Controller {
   def day(year: Int, month: Int, day: Int) = Action {
     val dt = new LocalDate(year, month, day)
 
-    val x = Screenshots(DataStore.findDataPointsForDay(dt))
+    val x = Screenshots(DataStore.findDataPointsForDay(ScannedLocation.ukNetworkFront, dt))
     Ok(views.html.day(dt.toString(dayFormat), x))
   }
 

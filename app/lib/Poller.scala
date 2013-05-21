@@ -26,7 +26,7 @@ class Poller(loc: ScannedLocation)(implicit actorSys: ActorSystem) {
 
   def poll() {
 
-    val now = DateTime.now(DateTimeZone.UTC)
+    val now = DateTime.now
 
     log.info(s"Checking if should run (${now.getMinuteOfHour})...")
 
@@ -55,22 +55,22 @@ class Poller(loc: ScannedLocation)(implicit actorSys: ActorSystem) {
 
         val doc = Jsoup.parse(r.body, loc.url)
 
-        DataStore.write(DataStore.mkPath(dt, loc.bucketPrefix, "raw", "html"), doc.toString)
+        DataStore.write(DataStore.mkPath(dt, loc, "raw", "html"), doc.toString)
         doc.select("script, noscript").remove()
 
-        val noScriptUrl = DataStore.write(DataStore.mkPath(dt, loc.bucketPrefix, "noscript", "html"), doc.toString)
+        val noScriptUrl = DataStore.write(DataStore.mkPath(dt, loc, "noscript", "html"), doc.toString)
 
         val tmpDir = Path.createTempDirectory(deleteOnExit = true)
 
 
         val pngFile = PhantomSnapper.snap(noScriptUrl, tmpDir)
-        DataStore.write(DataStore.mkPath(dt, loc.bucketPrefix, "full", "png"), pngFile)
+        DataStore.write(DataStore.mkPath(dt, loc, "full", "png"), pngFile)
 
         // and now crop!
         val (crop, thumb) = Cropper.cropAndThumb(pngFile, tmpDir)
 
-        DataStore.write(DataStore.mkPath(dt, loc.bucketPrefix, "crop", "png"), crop)
-        DataStore.write(DataStore.mkPath(dt, loc.bucketPrefix, "thumb", "png"), thumb)
+        DataStore.write(DataStore.mkPath(dt, loc, "crop", "png"), crop)
+        DataStore.write(DataStore.mkPath(dt, loc, "thumb", "png"), thumb)
 
         tmpDir.deleteRecursively()
       }

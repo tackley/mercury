@@ -8,7 +8,7 @@ import org.joda.time.format.DateTimeFormatterBuilder
 import com.amazonaws.util.StringInputStream
 import com.amazonaws.services.s3.model.{CannedAccessControlList, PutObjectRequest, ObjectMetadata}
 import java.io.File
-import controllers.Screenshot
+import scala.collection.JavaConverters._
 import java.net.URL
 
 object DataStore {
@@ -16,17 +16,26 @@ object DataStore {
   case class Path(bucket: String, key: String, ext: String) {
     def url = s"https://$bucket.s3.amazonaws.com/$key"
 
+    // oh dear. this doesn't belong here ;(
     def contentType = ext match {
       case "html" => "text/html"
       case "png" => "image/png"
     }
   }
 
+  case class Screenshot(dt: DateTime, basePath: URL, commonFilename: String) {
+    def hour = dt.getHourOfDay
+    def time = dt.toString("HH:mm")
+    def thumbnail = new URL(basePath, "thumb_" + commonFilename + ".png")
+    def full = new URL(basePath, "full_" + commonFilename + ".png")
+    def noscriptHtml = new URL(basePath, "noscript_" + commonFilename + ".html")
+  }
+
 
   private val log = Logger(getClass)
 
   private val s3 = new AmazonS3Client(Config.awsProvider)
-  //s3.setRegion(Region.getRegion(Regions.EU_WEST_1))
+  s3.setRegion(Region.getRegion(Regions.EU_WEST_1))
 
   private val bucket = "ophan-time-machine"
 
@@ -36,7 +45,6 @@ object DataStore {
     .appendMonthOfYear(2)
     .appendLiteral('/')
     .appendDayOfMonth(2)
-    .appendLiteral('/')
     .toFormatter
 
   lazy val fileDateFormat = new DateTimeFormatterBuilder()
@@ -51,8 +59,11 @@ object DataStore {
       .appendMinuteOfHour(2)
       .toFormatter
 
-  def mkPath(dt: DateTime, pgName: String, qualifier: String, extension: String): Path =
-    Path(bucket, s"$pgName/${dt.toString(pathDateFormat)}/${qualifier}_${dt.toString(fileDateFormat)}.$extension", extension)
+  def mkPath(dt: DateTime, location: ScannedLocation, qualifier: String, extension: String): Path =
+    Path(bucket, s"${location.bucketPrefix}/${dt.toString(pathDateFormat)}/${qualifier}_${dt.toString(fileDateFormat)}.$extension", extension)
+
+  private def mkBasePath(ld: LocalDate, location: ScannedLocation): Path =
+    Path(bucket, s"${location.bucketPrefix}/${ld.toString(pathDateFormat)}/", "")
 
   def write(p: Path, data: String): String = {
     log.info(s"write to $p...")
@@ -91,17 +102,20 @@ object DataStore {
 
   def years: List[Int] = List(2013)
 
-  def findDataPointsForDay(day: LocalDate): List[Screenshot] = {
-    s3.listObjects(bucket, "thumb_")
+  def findDataPointsForDay(loc: ScannedLocation, day: LocalDate): List[Screenshot] = {
+    val searchPath = mkBasePath(day, loc)
+    val result = s3.listObjects(searchPath.bucket, searchPath.key + "thumb_")
 
-    val root = scalax.file.Path.fromString(System.getProperty("user.home")) / "png"
-    val children = root * "*_thumb.png"
-
-    children.toList.map { x =>
-      val fn = x.name.split("_").head
-      val dt: DateTime = fileDateFormat.parseDateTime(fn).withZoneRetainFields(DateTimeZone.UTC)
-      Screenshot(dt, new URL("http://ophan-time-machine.s3.amazonaws.com/uknf/2013/05/20/" + x.name))
+    val screenshots = for (r <- result.getObjectSummaries.asScala) yield {
+      val key = r.getKey
+      val rawDate = key.split("_").last.stripSuffix(".png")
+      val dt = fileDateFormat.parseDateTime(rawDate)
+      Screenshot(dt,
+        new URL(s"http://$bucket.s3.amazonaws.com/${searchPath.key}"),
+        rawDate)
     }
+
+    screenshots.toList
   }
 
 }
