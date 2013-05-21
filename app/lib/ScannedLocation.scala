@@ -1,6 +1,5 @@
 package lib
 
-import java.net.URL
 
 case class ScannedLocation(
   name: String,

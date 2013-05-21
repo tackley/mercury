@@ -1,14 +1,14 @@
+@(years: List[Int])
+
 @main("Network Front Time Machine") {
 
-    @*
   <div id="wrapper">
 
       <div id="revision-list">
           <ol>
-         @for(r <- revisions) {
-            <li><a href="/version/@r.id" target="display">@r.dt</a> (@r.changes)</li>
-
-         }
+             @for(yr <- years) {
+                <li><a href="/@yr">@yr</a></li>
+             }
           </ol>
       </div>
 
@@ -17,6 +17,5 @@
       </iframe>
 
   </div>
-    *@
 
 }

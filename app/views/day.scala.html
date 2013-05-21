@@ -1,0 +1,33 @@
+@(day: String, screenshots: Screenshots)
+
+@main("Network Front Time Machine") {
+
+<div class="container-fluid">
+
+    <h1>@day</h1>
+
+    @for( (hour, shots) <- screenshots.byHour) {
+        <hr>
+        <h2>@hour:00</h2>
+
+        <div class="row-fluid">
+
+            <ul class="thumbnails">
+        @for(shot <- shots.sortBy(_.dt.getMillis)) {
+
+            <li>
+            <div class="thumbnail">
+                <img src="@shot.thumbnail">
+                <div class="caption text-center">@shot.time</div>
+            </div>
+            </li>
+
+        }
+            </ul>
+        </div>
+    }
+
+
+</div>
+
+}
