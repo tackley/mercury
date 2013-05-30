@@ -10,6 +10,8 @@ import com.amazonaws.services.s3.model.{CannedAccessControlList, PutObjectReques
 import java.io.File
 import scala.collection.JavaConverters._
 import java.net.URL
+import controllers.routes
+import play.api.libs.json.Json
 
 object DataStore {
 
@@ -26,9 +28,18 @@ object DataStore {
   case class Screenshot(dt: DateTime, basePath: URL, commonFilename: String) {
     def hour = dt.getHourOfDay
     def time = dt.toString("HH:mm")
+    def slideUrl = routes.Application.slide(dt.getYearOfCentury, dt.getMonthOfYear, dt.getDayOfMonth) +
+      s"?time=$time"
+
     def thumbnail = new URL(basePath, "thumb_" + commonFilename + ".png")
     def full = new URL(basePath, "full_" + commonFilename + ".png")
     def noscriptHtml = new URL(basePath, "noscript_" + commonFilename + ".html")
+
+    def asJson = Json.obj(
+      "dt" -> dt,
+      "time" -> time,
+      "img" -> full.toString
+    )
   }
 
 

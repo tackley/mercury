@@ -1,0 +1,149 @@
+{
+    "AWSTemplateFormatVersion": "2010-09-09",
+    "Description" : "Guardian Archive",
+    "Parameters" : {
+      "KeyName" : {
+        "Description" : "The EC2 Key Pair to allow SSH access to the instance",
+        "Type" : "String"
+      },
+      "InstanceType" : {
+        "Description" : "WebServer EC2 instance type",
+        "Type" : "String",
+        "Default" : "t1.micro",
+        "AllowedValues" : [ "t1.micro","m1.small","m1.medium","m1.large","m1.xlarge","m2.xlarge","m2.2xlarge","m2.4xlarge","c1.medium","c1.xlarge","cc1.4xlarge","cc2.8xlarge","cg1.4xlarge"],
+        "ConstraintDescription" : "must be a valid EC2 instance type."
+      }
+  },
+
+  "Resources" : {
+
+    "ArchiveUser" : {
+      "Type" : "AWS::IAM::User",
+        "Properties":{
+            "Path":"/",
+            "Groups": ["ophan-time-machine"]
+        }
+    },
+
+    "HostKeys" : {
+      "Type" : "AWS::IAM::AccessKey",
+      "Properties" : {
+        "UserName" : {"Ref": "ArchiveUser"}
+      }
+    },
+
+    "LoadBalancer" : {
+      "Type" : "AWS::ElasticLoadBalancing::LoadBalancer",
+      "Properties" : {
+        "AvailabilityZones" : { "Fn::GetAZs" : "" },
+        "Listeners" : [ {
+            "LoadBalancerPort" : "80",
+            "InstancePort" : "9000",
+            "Protocol" : "HTTP"
+         } ],
+
+        "HealthCheck" : {
+            "Target" : "HTTP:9000/health-check",
+            "HealthyThreshold" : "2",
+            "UnhealthyThreshold" : "2",
+            "Interval" : "30",
+            "Timeout" : "5"
+         }
+      }
+    },
+
+
+    "AutoscalingGroup" : {
+      "Type" : "AWS::AutoScaling::AutoScalingGroup",
+      "Properties" : {
+        "AvailabilityZones" : { "Fn::GetAZs" : "" },
+        "LaunchConfigurationName" : { "Ref" : "LaunchConfig" },
+        "MinSize" : "1",
+        "MaxSize" : "1",
+        "DesiredCapacity" : "1",
+        "HealthCheckType" : "ELB",
+        "HealthCheckGracePeriod" : 300,
+        "LoadBalancerNames" : [ { "Ref": "LoadBalancer" }],
+        "Tags" : [
+          { "Key" : "Stage", "Value" : "PROD", "PropagateAtLaunch" : "true"  },
+          { "Key" : "Role", "Value" : "ophan-time-machine", "PropagateAtLaunch" : "true"  },
+          { "Key" : "App", "Value" : "ophan-time-machine", "PropagateAtLaunch" : "true"  }
+        ]
+      }
+    },
+
+    "LaunchConfig" : {
+      "Type" : "AWS::AutoScaling::LaunchConfiguration",
+      "DependsOn" : "HostKeys",
+      "Properties" : {
+        "KeyName" : { "Ref" : "KeyName" },
+        "ImageId":"ami-3d160149",
+        "SecurityGroups": [
+            { "Ref" : "EC2SecurityGroup" }
+        ],
+        "InstanceType" : { "Ref" : "InstanceType" },
+        "UserData" : { "Fn::Base64": {
+            "Fn::Join":["", [
+                "#!/bin/bash -ev\n",
+                "apt-get -y update\n",
+                "apt-get -y install language-pack-en openjdk-7-jre-headless phantomjs\n",
+
+                "adduser --system --home /ophan --disabled-password ophan\n",
+
+                "cat > /etc/aws.conf <<EOF\n",
+                { "Fn::Join": ["", [ "accessKey=\"", { "Ref" : "HostKeys" }, "\"\n" ] ] },
+                { "Fn::Join": ["", [ "secretKey=\"", {"Fn::GetAtt": ["HostKeys", "SecretAccessKey"]}, "\"\n" ] ] },
+                "EOF\n",
+
+                "echo PROD > /etc/stage\n",
+
+                "wget https://s3-eu-west-1.amazonaws.com/ophan-dist/PROD/ophan-time-machine/ophan-time-machine.conf",
+                " --directory-prefix=/etc/init\n",
+
+                "wget https://s3-eu-west-1.amazonaws.com/ophan-dist/PROD/ophan-time-machine/app.jar",
+                " --directory-prefix=/ophan\n",
+
+                "chown ophan /ophan/*\n",
+
+                "start ophan-time-machine\n"
+            ]]
+
+        }}
+
+      }
+    },
+
+    "EC2SecurityGroup" : {
+      "Type" : "AWS::EC2::SecurityGroup",
+      "Properties" : {
+        "GroupDescription" : "Open up SSH access and http to load balancer",
+        "SecurityGroupIngress" : [
+          { "IpProtocol": "tcp", "FromPort": "22",   "ToPort": "22",   "CidrIp": "0.0.0.0/0" },
+          { "IpProtocol": "tcp", "FromPort": "9000",   "ToPort": "9000",   "CidrIp": "0.0.0.0/0" },
+          { "IpProtocol": "tcp", "FromPort": "9000",   "ToPort": "9000",
+            "SourceSecurityGroupName": "amazon-elb-sg", "SourceSecurityGroupOwnerId": "amazon-elb" }
+        ]
+      }
+    },
+
+    "MainDnsEntry" : {
+      "Type" : "AWS::Route53::RecordSet",
+      "Properties" : {
+        "HostedZoneName" : "ophan.co.uk.",
+        "Comment" : "CNAME for tracking servers",
+        "Name" : "time-machine.ophan.co.uk",
+        "Type" : "CNAME",
+        "TTL" : "900",
+        "ResourceRecords" : [
+          {"Fn::GetAtt":["LoadBalancer","DNSName"]}
+        ]
+      }
+    }   
+  },
+
+  "Outputs" : {
+    "LoadBalancerUrl" : {
+      "Value" : { "Ref" : "LoadBalancer" }
+    }
+  }
+}

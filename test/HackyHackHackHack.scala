@@ -1,10 +1,9 @@
-import com.amazonaws.util.StringInputStream
 import java.awt.image.BufferedImage
 import java.awt.{AlphaComposite, RenderingHints}
 import java.io.File
 import java.net.URL
 import javax.imageio.ImageIO
-import scalax.file.Path
+import scala.language.reflectiveCalls
 
 object HackyHackHackHack extends App {
   println("hello")

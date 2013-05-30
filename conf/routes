@@ -4,10 +4,9 @@
 
 GET     /assets/*file               controllers.Assets.at(path="/public", file)
 
-#GET     /                           controllers.Application.index
-#GET     /:pageName                   controllers.Application.index
-#GET     /:pageName/:year                      controllers.Application.months(year: Int)
-#GET     /:pageName/:year/:month               controllers.Application.days(year: Int, month: Int)
 GET     /uknf                       controllers.Application.today
 GET     /uknf/:year/:month/:day          controllers.Application.day(year: Int, month: Int, day: Int)
 
+GET     /uknf/slide/:year/:month/:day   controllers.Application.slide(year: Int, month: Int, day: Int)
+
+GET     /slide-demo     controllers.Application.slideDemo

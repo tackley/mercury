@@ -1,0 +1,52 @@
+@(allShots: Screenshots, initialIdx: Int, initial: lib.DataStore.Screenshot)
+
+@main("Network Front Time Machine") {
+
+ <script>
+     var global_screens = @{Html(allShots.asJson.toString())};
+     var global_curIdx = @initialIdx;
+ </script>
+
+ <script src="@routes.Assets.at("js/slide.js")" type="text/javascript"></script>
+
+ <div class="navbar navbar-fixed-bottom">
+     <div class="navbar-inner">
+         <ul class="nav">
+             <li class="dropdown">
+                 <a class="dropdown-toggle" data-toggle="dropdown" href="#">
+                     UK Network Front
+                     <b class="caret"></b>
+                 </a>
+                 <ul class="dropdown-menu" role="menu">
+                     <li><a href="#">UK Network Front</a></li>
+                 </ul>
+             </li>
+             <li class="dropdown">
+                 <a class="dropdown-toggle" data-toggle="dropdown" href="#">
+                     Today
+                     <b class="caret"></b>
+                 </a>
+                 <ul class="dropdown-menu" role="menu">
+                     <li><a href="#">Today</a></li>
+                     <li><a href="#">Yesterday</a></li>
+                     <li><a href="#">Monday</a></li>
+                 </ul>
+             </li>
+             <li>
+                 <p class="navbar-text">
+                     <span id="picker-time">@initial.time</span>
+                 </p>
+             </li>
+
+         </ul>
+
+         <p class="navbar-text pull-right">use left and right arrow keys to navigate through time</p>
+     </div>
+ </div>
+<div class="container-fluid">
+
+    <img id="screenshot" src="@initial.full">
+
+</div>
+
+}

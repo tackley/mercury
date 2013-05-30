@@ -42,38 +42,22 @@ object Application extends Controller {
     Ok(views.html.day(dt.toString(dayFormat), x))
   }
 
-  /*
-  def index = Action {
-    val revisions = ElasticSearch.client
-      .prepareSearch("time-machine")
-      .setTypes("nf")
-      .addField("linesChanged")
-      .addSort("dt", SortOrder.DESC)
-      .setSize(150)
-      .execute()
-      .get()
-      .hits()
-      .map { new Revision(_) }
-      .toList
+  def slide(year: Int, month: Int, day: Int) = Action { r =>
+    val dt = new LocalDate(year, month, day)
 
-    Ok(views.html.index(revisions))
+    val screens = Screenshots(DataStore.findDataPointsForDay(ScannedLocation.ukNetworkFront, dt))
+
+    val selectedTime = r.getQueryString("time")
+
+    val initialIdx = selectedTime
+      .map(t => screens.shots.indexWhere(_.time == t))
+      .filterNot(_ == -1)
+      .getOrElse(0)
+
+    Ok(views.html.slide(screens, initialIdx, screens.shots(initialIdx)))
   }
 
-  def showVersion(version: Long) = Action {
-    val html = ElasticSearch.client
-      .prepareGet("time-machine", "nf", version.toString)
-      .setFields("html")
-      .execute()
-      .get()
-      .field("html")
-      .value()
-      .toString
-
-    // and strip out scripts
-    val doc = Jsoup.parse(html, "http://www.guardian.co.uk")
-    doc.select("script, noscript").remove()
-
-    Ok(doc.outerHtml()).as("text/html")
+  def slideDemo = Action {
+    Ok(views.html.slideDemo())
   }
-  */
 }
