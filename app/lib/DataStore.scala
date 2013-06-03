@@ -1,6 +1,6 @@
 package lib
 
-import org.joda.time.{DateTimeZone, LocalDate, DateTime}
+import org.joda.time.{Duration, DateTimeZone, LocalDate, DateTime}
 import play.api.Logger
 import com.amazonaws.regions.{Region, Regions}
 import com.amazonaws.services.s3.AmazonS3Client
@@ -16,7 +16,7 @@ import play.api.libs.json.Json
 object DataStore {
 
   case class Path(bucket: String, key: String, ext: String) {
-    def url = s"https://$bucket.s3.amazonaws.com/$key"
+    def url = s"http://$bucket.s3.amazonaws.com/$key"
 
     // oh dear. this doesn't belong here ;(
     def contentType = ext match {
@@ -76,7 +76,7 @@ object DataStore {
   private def mkBasePath(ld: LocalDate, location: ScannedLocation): Path =
     Path(bucket, s"${location.bucketPrefix}/${ld.toString(pathDateFormat)}/", "")
 
-  def write(p: Path, data: String): String = {
+  def write(p: Path, dt: DateTime, data: String): String = {
     log.info(s"write to $p...")
 
     val s = new StringInputStream(data)
@@ -84,6 +84,8 @@ object DataStore {
     val md = new ObjectMetadata()
     md.setContentLength(s.available())
     md.setContentType(p.contentType)
+    md.setLastModified(dt.toDate)
+    md.setCacheControl(s"max-age: ${Duration.standardDays(30).getStandardSeconds}")
 
     val putObjReq = new PutObjectRequest(p.bucket, p.key, s, md)
       .withCannedAcl(CannedAccessControlList.PublicRead)
