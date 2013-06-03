@@ -55,15 +55,18 @@ class Poller(loc: ScannedLocation)(implicit actorSys: ActorSystem) {
 
         val doc = Jsoup.parse(r.body, loc.url)
 
-        DataStore.write(DataStore.mkPath(dt, loc, "raw", "html"), doc.toString)
-        doc.select("script, noscript").remove()
 
-        val noScriptUrl = DataStore.write(DataStore.mkPath(dt, loc, "noscript", "html"), doc.toString)
+        val storedUrl = DataStore.write(DataStore.mkPath(dt, loc, "raw", "html"), dt, doc.toString)
+
+        // removing all script is probably too much - perhaps we should
+        // just remove the ad code?
+        doc.select("script, noscript").remove()
+        val noScriptUrl = DataStore.write(DataStore.mkPath(dt, loc, "noscript", "html"), dt, doc.toString)
 
         val tmpDir = Path.createTempDirectory(deleteOnExit = true)
 
 
-        val pngFile = PhantomSnapper.snap(noScriptUrl, tmpDir)
+        val pngFile = PhantomSnapper.snap(storedUrl, tmpDir)
         DataStore.write(DataStore.mkPath(dt, loc, "full", "png"), pngFile)
 
         // and now crop!
