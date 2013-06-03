@@ -28,7 +28,7 @@ object DataStore {
   case class Screenshot(dt: DateTime, basePath: URL, commonFilename: String) {
     def hour = dt.getHourOfDay
     def time = dt.toString("HH:mm")
-    def slideUrl = routes.Application.slide(dt.getYearOfCentury, dt.getMonthOfYear, dt.getDayOfMonth) +
+    def slideUrl = routes.Application.slide(dt.getYear, dt.getMonthOfYear, dt.getDayOfMonth) +
       s"?initialTime=$time"
 
     def thumbnail = new URL(basePath, "thumb_" + commonFilename + ".png")

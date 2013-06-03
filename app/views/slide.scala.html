@@ -27,9 +27,11 @@
                      <b class="caret"></b>
                  </a>
                  <ul class="dropdown-menu" role="menu">
-                     <li><a href="#">Today</a></li>
-                     <li><a href="#">Yesterday</a></li>
-                     <li><a href="#">Monday</a></li>
+                     <li><a href="@routes.Application.today">Today</a></li>
+                     <li><a href="@routes.Application.yesterday">Yesterday</a></li>
+                     @for( (name, url) <- lib.DaysHelper.lastWeek ) {
+                       <li><a href="@url">@name</a></li>
+                     }
                  </ul>
              </li>
              <li>
@@ -40,7 +42,7 @@
 
          </ul>
 
-         <p class="navbar-text pull-right">use left and right arrow keys to navigate through time</p>
+         <p class="navbar-text pull-right" style="margin-right: 10px">use left and right arrow keys to navigate through time</p>
      </div>
  </div>
 <div class="container-fluid">

@@ -25,6 +25,11 @@ object Application extends Controller {
     day(t.getYear, t.getMonthOfYear, t.getDayOfMonth)
   }
 
+  def yesterday = {
+    val t = LocalDate.now().minusDays(1)
+    day(t.getYear, t.getMonthOfYear, t.getDayOfMonth)
+  }
+
   val dayFormat = new DateTimeFormatterBuilder()
     .appendDayOfWeekText()
     .appendLiteral(' ')
