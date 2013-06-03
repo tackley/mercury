@@ -47,7 +47,7 @@ object Application extends Controller {
 
     val screens = Screenshots(DataStore.findDataPointsForDay(ScannedLocation.ukNetworkFront, dt))
 
-    val selectedTime = r.getQueryString("time")
+    val selectedTime = r.getQueryString("initialTime")
 
     val initialIdx = selectedTime
       .map(t => screens.shots.indexWhere(_.time == t))

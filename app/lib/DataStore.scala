@@ -29,7 +29,7 @@ object DataStore {
     def hour = dt.getHourOfDay
     def time = dt.toString("HH:mm")
     def slideUrl = routes.Application.slide(dt.getYearOfCentury, dt.getMonthOfYear, dt.getDayOfMonth) +
-      s"?time=$time"
+      s"?initialTime=$time"
 
     def thumbnail = new URL(basePath, "thumb_" + commonFilename + ".png")
     def full = new URL(basePath, "full_" + commonFilename + ".png")
