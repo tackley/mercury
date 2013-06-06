@@ -83,10 +83,13 @@
         ],
         "InstanceType" : { "Ref" : "InstanceType" },
         "UserData" : { "Fn::Base64": {
+
+            SEE https://gist.github.com/madrobby/5489174
+
             "Fn::Join":["", [
                 "#!/bin/bash -ev\n",
                 "apt-get -y update\n",
-                "apt-get -y install language-pack-en openjdk-7-jre-headless phantomjs\n",
+                "apt-get -y install language-pack-en openjdk-7-jre-headless phantomjs imagemagick\n",
 
                 "adduser --system --home /ophan --disabled-password ophan\n",
 

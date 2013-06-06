@@ -2,7 +2,7 @@ package lib
 
 import akka.actor.ActorSystem
 import play.api.libs.ws.WS
-import org.joda.time.DateTime
+import org.joda.time.{DateTimeZone, DateTime}
 
 import play.api.Logger
 import play.api.http.HeaderNames._
@@ -14,7 +14,9 @@ class Poller(loc: ScannedLocation)(implicit actorSys: ActorSystem) {
 
   def poll() {
 
-    val now = DateTime.now
+    // time zone here is important: we store everything in S3 in
+    // local london time
+    val now = DateTime.now.withZone(DateTimeZone.forID("Europe/London"))
 
     log.info(s"Checking if should run (${now.getMinuteOfHour})...")
 
@@ -55,6 +57,8 @@ class Poller(loc: ScannedLocation)(implicit actorSys: ActorSystem) {
         // and create a thumbnail crop
         val thumb = ImageMagick.thumb(pngFile, tmpDir)
         DataStore.write(DataStore.mkPath(dt, loc, "thumb", "jpg"), thumb)
+
+        log.info("done")
 
         tmpDir.deleteRecursively()
       }

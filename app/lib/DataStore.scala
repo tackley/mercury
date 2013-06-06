@@ -77,6 +77,7 @@ object DataStore {
 
     val md = new ObjectMetadata()
     md.setContentLength(s.available())
+    md.setContentType(mimeType)
     md.setLastModified(dt.toDate)
     md.setCacheControl(s"max-age: ${Duration.standardDays(30).getStandardSeconds}")
 

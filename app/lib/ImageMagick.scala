@@ -23,6 +23,7 @@ object ImageMagick {
 
 
   def compress(file: File, tmpDir: Path): File = {
+    log.info("Compressing...")
     val output = tmpDir / "compressed.jpg"
 
     Seq("convert", file.getAbsolutePath, "-quality", "30", output.path).!!
@@ -31,6 +32,8 @@ object ImageMagick {
   }
 
   def thumb(file: File, tmpDir: Path): File = {
+    log.info("Creating thumbnail...")
+
     val output = tmpDir / "thumb.jpg"
 
     Seq("convert", file.getAbsolutePath, "-crop", "x1200+0+260", "-resize", "35%", output.path).!!
