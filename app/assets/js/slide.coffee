@@ -1,7 +1,7 @@
 jQuery ->
   # left = 37; right = 39
   # up = 38; down = 40
-  console.log "starting"
+  #console.log "starting"
 
   # pick up the stuff that the server put in the page for us
   curIdx = global_curIdx
@@ -9,12 +9,12 @@ jQuery ->
   curShot = screenShots[curIdx]
 
   refreshDisplay = ->
-    console.log "idx = #{curIdx} setting src to #{curShot.img}..."
+    #console.log "idx = #{curIdx} setting src to #{curShot.img}..."
     $("#picker-time").text(curShot.time)
     $("#screenshot").attr("src", curShot.img)
 
   $(document).keyup (e) ->
-    console.log "Keyup: #{e.which}"
+    #console.log "Keyup: #{e.which}"
     if e.which == 39
       curIdx += 1
       curIdx = 0 if curIdx >= screenShots.length

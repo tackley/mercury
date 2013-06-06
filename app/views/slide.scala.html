@@ -9,40 +9,43 @@
 
  <script src="@routes.Assets.at("js/slide.js")" type="text/javascript"></script>
 
- <div class="navbar navbar-fixed-bottom">
+ <div class="navbar navbar-fixed-top">
      <div class="navbar-inner">
-         <ul class="nav">
-             <li class="dropdown">
-                 <a class="dropdown-toggle" data-toggle="dropdown" href="#">
-                     UK Network Front
-                     <b class="caret"></b>
-                 </a>
-                 <ul class="dropdown-menu" role="menu">
-                     <li><a href="#">UK Network Front</a></li>
-                 </ul>
-             </li>
-             <li class="dropdown">
-                 <a class="dropdown-toggle" data-toggle="dropdown" href="#">
-                     Today
-                     <b class="caret"></b>
-                 </a>
-                 <ul class="dropdown-menu" role="menu">
-                     <li><a href="@routes.Application.today">Today</a></li>
-                     <li><a href="@routes.Application.yesterday">Yesterday</a></li>
-                     @for( (name, url) <- lib.DaysHelper.lastWeek ) {
-                       <li><a href="@url">@name</a></li>
-                     }
-                 </ul>
-             </li>
-             <li>
-                 <p class="navbar-text">
-                     <span id="picker-time">@initial.time</span>
-                 </p>
-             </li>
+         <div class="container-fluid">
+             <a class="brand" href="/">Time Machine</a>
+             <ul class="nav">
+                 <li class="dropdown">
+                     <a class="dropdown-toggle" data-toggle="dropdown" href="#">
+                         UK Network Front
+                         <b class="caret"></b>
+                     </a>
+                     <ul class="dropdown-menu" role="menu">
+                         <li><a href="#">UK Network Front</a></li>
+                     </ul>
+                 </li>
+                 <li class="dropdown">
+                     <a class="dropdown-toggle" data-toggle="dropdown" href="#">
+                         Today
+                         <b class="caret"></b>
+                     </a>
+                     <ul class="dropdown-menu" role="menu">
+                         <li><a href="@routes.Application.today">Today</a></li>
+                         <li><a href="@routes.Application.yesterday">Yesterday</a></li>
+                         @for( (name, url) <- lib.DaysHelper.lastWeek ) {
+                           <li><a href="@url">@name</a></li>
+                         }
+                     </ul>
+                 </li>
+                 <li>
+                     <p class="navbar-text">
+                         <span id="picker-time">@initial.time</span>
+                     </p>
+                 </li>
 
-         </ul>
+             </ul>
 
-         <p class="navbar-text pull-right" style="margin-right: 10px">use left and right arrow keys to navigate through time</p>
+             <p class="navbar-text pull-right" style="margin-right: 10px">use left and right arrow keys to navigate through time</p>
+         </div>
      </div>
  </div>
 <div class="container-fluid">
