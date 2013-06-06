@@ -5,7 +5,7 @@ import scalax.file.Path
 import play.api.Logger
 
 object PhantomSnapper {
-  private lazy val log = Logger(getClass)
+  private val log = Logger.logger
 
   def snap(url: String, tmpDir: Path): File = {
     import scala.sys.process._
@@ -26,7 +26,7 @@ object PhantomSnapper {
 
     log.info("Snapping " + url)
 
-    Seq("phantomjs", cmdFile.path).!
+    Seq("phantomjs", cmdFile.path).!!
 
     log.info("Snapped!")
 

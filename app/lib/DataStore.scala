@@ -15,14 +15,8 @@ import play.api.libs.json.Json
 
 object DataStore {
 
-  case class Path(bucket: String, key: String, ext: String) {
+  case class Path(bucket: String, key: String) {
     def url = s"http://$bucket.s3.amazonaws.com/$key"
-
-    // oh dear. this doesn't belong here ;(
-    def contentType = ext match {
-      case "html" => "text/html"
-      case "png" => "image/png"
-    }
   }
 
   case class Screenshot(dt: DateTime, basePath: URL, commonFilename: String) {
@@ -31,9 +25,9 @@ object DataStore {
     def slideUrl = routes.Application.slide(dt.getYear, dt.getMonthOfYear, dt.getDayOfMonth) +
       s"?initialTime=$time"
 
-    def thumbnail = new URL(basePath, "thumb_" + commonFilename + ".png")
-    def full = new URL(basePath, "full_" + commonFilename + ".png")
-    def noscriptHtml = new URL(basePath, "noscript_" + commonFilename + ".html")
+    def thumbnail = new URL(basePath, "thumb_" + commonFilename + ".jpg")
+    def full = new URL(basePath, "full_" + commonFilename + ".jpg")
+    def html = new URL(basePath, "raw_" + commonFilename + ".html")
 
     def asJson = Json.obj(
       "dt" -> dt,
@@ -71,19 +65,18 @@ object DataStore {
       .toFormatter
 
   def mkPath(dt: DateTime, location: ScannedLocation, qualifier: String, extension: String): Path =
-    Path(bucket, s"${location.bucketPrefix}/${dt.toString(pathDateFormat)}/${qualifier}_${dt.toString(fileDateFormat)}.$extension", extension)
+    Path(bucket, s"${location.bucketPrefix}/${dt.toString(pathDateFormat)}/${qualifier}_${dt.toString(fileDateFormat)}.$extension")
 
   private def mkBasePath(ld: LocalDate, location: ScannedLocation): Path =
-    Path(bucket, s"${location.bucketPrefix}/${ld.toString(pathDateFormat)}/", "")
+    Path(bucket, s"${location.bucketPrefix}/${ld.toString(pathDateFormat)}/")
 
-  def write(p: Path, dt: DateTime, data: String): String = {
+  def write(p: Path, dt: DateTime, data: String, mimeType: String): String = {
     log.info(s"write to $p...")
 
     val s = new StringInputStream(data)
 
     val md = new ObjectMetadata()
     md.setContentLength(s.available())
-    md.setContentType(p.contentType)
     md.setLastModified(dt.toDate)
     md.setCacheControl(s"max-age: ${Duration.standardDays(30).getStandardSeconds}")
 
@@ -99,9 +92,9 @@ object DataStore {
   def write(p: Path, file: File): String = {
     log.info(s"write to $p...")
 
-
     val md = new ObjectMetadata()
-    md.setContentType(p.contentType)
+    md.setLastModified(DateTime.now.toDate)
+    md.setCacheControl(s"max-age: ${Duration.standardDays(30).getStandardSeconds}")
 
     val putObjReq = new PutObjectRequest(p.bucket, p.key, file)
       .withMetadata(md)
@@ -121,7 +114,7 @@ object DataStore {
 
     val screenshots = for (r <- result.getObjectSummaries.asScala) yield {
       val key = r.getKey
-      val rawDate = key.split("_").last.stripSuffix(".png")
+      val rawDate = key.split("_").last.split("\\.").head
       val dt = fileDateFormat.parseDateTime(rawDate)
       Screenshot(dt,
         new URL(s"http://$bucket.s3.amazonaws.com/${searchPath.key}"),

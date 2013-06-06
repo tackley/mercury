@@ -1,28 +1,16 @@
 package lib
 
 import akka.actor.ActorSystem
-import akka.event.Logging
 import play.api.libs.ws.WS
-import play.api.http.HeaderNames
-import org.jsoup.Jsoup
-import collection.JavaConversions._
-import scalax.io.Resource
-import org.jsoup.nodes.Node
-import org.joda.time.{DateTimeZone, DateTime}
+import org.joda.time.DateTime
 
-import javax.swing.SortOrder
-import java.util.TimeZone
 import play.api.Logger
 import play.api.http.HeaderNames._
-import javax.imageio.ImageIO
-import java.io.File
-import java.awt.image.BufferedImage
-import java.awt.{RenderingHints, AlphaComposite}
 import scalax.file.Path
 
 class Poller(loc: ScannedLocation)(implicit actorSys: ActorSystem) {
 
-  private val log = Logger(getClass)
+  private val log = Logger.logger
 
   def poll() {
 
@@ -48,32 +36,25 @@ class Poller(loc: ScannedLocation)(implicit actorSys: ActorSystem) {
     log.info("Polling...")
 
     WS.url(loc.url)
-      .withHeaders(USER_AGENT -> "Network Front Time Machine; contact graham.tackley@guardian.co.uk")
+      .withHeaders(
+        USER_AGENT -> "Network Front Time Machine; contact graham.tackley@guardian.co.uk",
+        "X-GU-GeoLocation" -> "ip:123.123.123.123;country:GB")
       .get()
       .map { r =>
-        log.info("Parsing...")
+        log.info("Processing...")
 
-        val doc = Jsoup.parse(r.body, loc.url)
-
-
-        val storedUrl = DataStore.write(DataStore.mkPath(dt, loc, "raw", "html"), dt, doc.toString)
-
-        // removing all script is probably too much - perhaps we should
-        // just remove the ad code?
-        doc.select("script, noscript").remove()
-        val noScriptUrl = DataStore.write(DataStore.mkPath(dt, loc, "noscript", "html"), dt, doc.toString)
-
+        val storedUrl = DataStore.write(DataStore.mkPath(dt, loc, "raw", "html"), dt, r.body, "text/html")
         val tmpDir = Path.createTempDirectory(deleteOnExit = true)
 
-
         val pngFile = PhantomSnapper.snap(storedUrl, tmpDir)
-        DataStore.write(DataStore.mkPath(dt, loc, "full", "png"), pngFile)
 
-        // and now crop!
-        val (crop, thumb) = Cropper.cropAndThumb(pngFile, tmpDir)
+        // and now make a much smaller, lower quality image that loads faster
+        val smallerMainImage = ImageMagick.compress(pngFile, tmpDir)
+        DataStore.write(DataStore.mkPath(dt, loc, "full", "jpg"), smallerMainImage)
 
-        DataStore.write(DataStore.mkPath(dt, loc, "crop", "png"), crop)
-        DataStore.write(DataStore.mkPath(dt, loc, "thumb", "png"), thumb)
+        // and create a thumbnail crop
+        val thumb = ImageMagick.thumb(pngFile, tmpDir)
+        DataStore.write(DataStore.mkPath(dt, loc, "thumb", "jpg"), thumb)
 
         tmpDir.deleteRecursively()
       }
