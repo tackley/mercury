@@ -1,0 +1,21 @@
+{
+    "packages":{
+        "ophan-time-machine":{
+            "type":"autoscaling",
+            "data":{
+                "bucket":"ophan-dist"
+            }
+        }
+    },
+    "recipes":{
+        "default":{
+            "depends" : ["artifactUploadOnly", "deployOnly"]
+        },
+        "deployOnly":{
+            "actionsBeforeApp": ["ophan-time-machine.deploy"]
+        },
+        "artifactUploadOnly":{
+            "actionsBeforeApp": ["ophan-time-machine.uploadArtifacts"]
+        }
+    }
+}
