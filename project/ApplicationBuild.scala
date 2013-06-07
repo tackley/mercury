@@ -43,6 +43,7 @@ object ApplicationBuild extends Build {
           (assembly, baseDirectory) =>
             Seq(
               assembly -> "packages/ophan-time-machine/%s".format(assembly.getName),
+              baseDirectory / "ophan-time-machine.conf" -> "packages/ophan-time-machine/ophan-time-machine.conf",
               baseDirectory / "conf" / "deploy.json" -> "deploy.json"
             )
         },

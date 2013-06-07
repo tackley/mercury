@@ -1,6 +1,6 @@
 {
     "AWSTemplateFormatVersion": "2010-09-09",
-    "Description" : "Guardian Archive",
+    "Description" : "Ophan Time Machine",
     "Parameters" : {
       "KeyName" : {
         "Description" : "The EC2 Key Pair to allow SSH access to the instance",
@@ -84,12 +84,18 @@
         "InstanceType" : { "Ref" : "InstanceType" },
         "UserData" : { "Fn::Base64": {
 
-            SEE https://gist.github.com/madrobby/5489174
-
             "Fn::Join":["", [
                 "#!/bin/bash -ev\n",
+
+                "# see https://gist.github.com/madrobby/5489174\n",
+
+                "sed -i -e \"s/# deb/deb/g\" /etc/apt/sources.list\n",
+
+                "echo ttf-mscorefonts-installer msttcorefonts/accepted-mscorefonts-eula select true | debconf-set-selections\n",
+
                 "apt-get -y update\n",
-                "apt-get -y install language-pack-en openjdk-7-jre-headless phantomjs imagemagick\n",
+                "apt-get -y install language-pack-en openjdk-7-jre-headless phantomjs imagemagick ",
+                    "libfreetype6 libfreetype6-dev libfontconfig ttf-mscorefonts-installer\n",
 
                 "adduser --system --home /ophan --disabled-password ophan\n",
 
