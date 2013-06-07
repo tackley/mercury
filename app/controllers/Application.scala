@@ -4,9 +4,22 @@ import play.api.mvc._
 import lib.{ScannedLocation, DataStore}
 import org.joda.time.LocalDate
 import org.joda.time.format.DateTimeFormatterBuilder
+import java.util.Date
 
 
 object Application extends Controller {
+
+  def healthcheck = Action {
+    Ok("All good")
+  }
+
+  def manifest() = Action {
+    val data = Map(
+      "Build" -> "PREVIEW"
+    )
+
+    Ok(data map { case (k, v) => s"$k: $v"} mkString "\n")
+  }
 
   def home = Action {
     Ok(views.html.home())

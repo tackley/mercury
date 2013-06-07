@@ -4,7 +4,8 @@
     "Parameters" : {
       "KeyName" : {
         "Description" : "The EC2 Key Pair to allow SSH access to the instance",
-        "Type" : "String"
+        "Type" : "String",
+        "Default": "id_rsa_ec2"
       },
       "InstanceType" : {
         "Description" : "WebServer EC2 instance type",
@@ -17,20 +18,48 @@
 
   "Resources" : {
 
-    "ArchiveUser" : {
-      "Type" : "AWS::IAM::User",
-        "Properties":{
-            "Path":"/",
-            "Groups": ["ophan-time-machine"]
-        }
-    },
+      "OphanTimeMachineRole" : {
+          "Type" : "AWS::IAM::Role",
+          "Properties":{
+              "Path":"/",
+              "AssumeRolePolicyDocument": {
+                  "Statement": [ {
+                      "Effect": "Allow",
+                      "Principal": { "Service": [ "ec2.amazonaws.com" ] },
+                      "Action": [ "sts:AssumeRole" ]
+                  } ]
+              }
+          }
+      },
+      "OphanTMBucketWriterPolicy" : {
+          "Type": "AWS::IAM::Policy",
+          "Properties": {
+              "PolicyName": "OphanTimeMachineBucketWriterPolicy",
+              "PolicyDocument": {
+                  "Statement": [ {
+                      "Action": [
+                          "s3:*"
+                      ],
+                      "Effect": "Allow",
+                      "Resource": [
+                          "arn:aws:s3:::ophan-time-machine",
+                          "arn:aws:s3:::ophan-time-machine/*"
+                      ]
+                  }]
+              },
+              "Roles": [ { "Ref": "OphanTimeMachineRole" } ]
+          }
+      },
+      "OphanTimeMachineInstanceProfile": {
+          "Type": "AWS::IAM::InstanceProfile",
+          "Properties": {
+              "Path": "/",
+              "Roles": [ {
+                  "Ref": "OphanTimeMachineRole"
+              } ]
+          }
+      },
 
-    "HostKeys" : {
-      "Type" : "AWS::IAM::AccessKey",
-      "Properties" : {
-        "UserName" : {"Ref": "ArchiveUser"}
-      }
-    },
 
     "LoadBalancer" : {
       "Type" : "AWS::ElasticLoadBalancing::LoadBalancer",
@@ -74,7 +103,6 @@
 
     "LaunchConfig" : {
       "Type" : "AWS::AutoScaling::LaunchConfiguration",
-      "DependsOn" : "HostKeys",
       "Properties" : {
         "KeyName" : { "Ref" : "KeyName" },
         "ImageId":"ami-3d160149",
@@ -82,6 +110,7 @@
             { "Ref" : "EC2SecurityGroup" }
         ],
         "InstanceType" : { "Ref" : "InstanceType" },
+        "IamInstanceProfile": { "Ref" : "OphanTimeMachineInstanceProfile" },
         "UserData" : { "Fn::Base64": {
 
             "Fn::Join":["", [
@@ -98,11 +127,6 @@
                     "libfreetype6 libfreetype6-dev libfontconfig ttf-mscorefonts-installer\n",
 
                 "adduser --system --home /ophan --disabled-password ophan\n",
-
-                "cat > /etc/aws.conf <<EOF\n",
-                { "Fn::Join": ["", [ "accessKey=\"", { "Ref" : "HostKeys" }, "\"\n" ] ] },
-                { "Fn::Join": ["", [ "secretKey=\"", {"Fn::GetAtt": ["HostKeys", "SecretAccessKey"]}, "\"\n" ] ] },
-                "EOF\n",
 
                 "echo PROD > /etc/stage\n",
 
@@ -137,6 +161,7 @@
 
     "MainDnsEntry" : {
       "Type" : "AWS::Route53::RecordSet",
+      "DeletionPolicy" : "Retain",
       "Properties" : {
         "HostedZoneName" : "ophan.co.uk.",
         "Comment" : "CNAME for tracking servers",

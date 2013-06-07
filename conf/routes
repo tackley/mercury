@@ -11,3 +11,7 @@ GET     /uknf/yesterday             controllers.Application.yesterday
 GET     /uknf/:year/:month/:day     controllers.Application.day(year: Int, month: Int, day: Int)
 
 GET     /uknf/slide/:year/:month/:day   controllers.Application.slide(year: Int, month: Int, day: Int)
+
+
+GET     /health-check               controllers.Application.healthcheck
+GET     /management/manifest        controllers.Application.manifest
