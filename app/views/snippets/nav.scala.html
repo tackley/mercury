@@ -1,0 +1,50 @@
+@(loc: lib.ScannedLocation, optDisplayedShot: Option[lib.DataStore.Screenshot] = None)
+
+<div class="navbar navbar-fixed-top navbar-darker-text">
+    <div class="navbar-inner">
+        <div class="container-fluid">
+            <a class="brand" href="/">Time Machine</a>
+            <ul class="nav">
+                <li class="dropdown">
+                    <a class="dropdown-toggle" data-toggle="dropdown" href="#">
+                         @loc.name
+                        <b class="caret"></b>
+                    </a>
+                    <ul class="dropdown-menu" role="menu">
+                        @for(availableLoc <- lib.ScannedLocation.all) {
+                            <li><a href="/@availableLoc.bucketPrefix">@availableLoc.name</a></li>
+                        }
+                    </ul>
+                </li>
+                <li class="dropdown">
+                    <a class="dropdown-toggle" data-toggle="dropdown" href="#">
+                         Today
+                        <b class="caret"></b>
+                    </a>
+                    <ul class="dropdown-menu" role="menu">
+                        <li><a href="@routes.Application.today">Today</a></li>
+                        <li><a href="@routes.Application.yesterday">Yesterday</a></li>
+                        @for( (name, url) <- lib.DaysHelper.lastWeek ) {
+                            <li><a href="@url">@name</a></li>
+                        }
+                    </ul>
+                </li>
+
+                @for(shot <- optDisplayedShot) {
+                    <li>
+                        <p class="navbar-text">
+                            <span id="picker-time">@shot.time</span>
+                        </p>
+                    </li>
+                }
+
+            </ul>
+
+            @for(shot <- optDisplayedShot) {
+
+                <a class="btn btn-small" href="@shot.thumbnailsViewUrl#@shot.time">Show Thumbnails</a>
+                <p class="navbar-text pull-right" >use left and right arrow keys to navigate through time</p>
+            }
+        </div>
+    </div>
+</div>

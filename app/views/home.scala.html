@@ -1,0 +1,23 @@
+@()
+
+@main("Network Front Time Machine") {
+
+  <div class="container-fluid">
+
+      <div class="row">
+          <h1 class="span12">What do you want to look at?</h1>
+      </div>
+
+      <div class="row">
+          <div class="span6">
+              <ol>
+              @for(loc <- lib.ScannedLocation.all) {
+                  <li><a href="/@loc.bucketPrefix">@loc.name</a></li>
+              }
+              </ol>
+          </div>
+      </div>
+
+  </div>
+
+}

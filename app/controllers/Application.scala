@@ -8,16 +8,8 @@ import org.joda.time.format.DateTimeFormatterBuilder
 
 object Application extends Controller {
 
-  def index = Action {
-    Ok(views.html.years(DataStore.years))
-  }
-
-  def months(year: Int) = Action {
-    Ok("TODO: Show months for " + year.toString)
-  }
-
-  def days(year: Int, month: Int) = Action {
-    Ok(s"TODO: Show days for month $month in year $year")
+  def home = Action {
+    Ok(views.html.home())
   }
 
   def today = {
@@ -43,14 +35,21 @@ object Application extends Controller {
   def day(year: Int, month: Int, day: Int) = Action {
     val dt = new LocalDate(year, month, day)
 
-    val x = Screenshots(DataStore.findDataPointsForDay(ScannedLocation.ukNetworkFront, dt))
+    val x = Screenshots(
+      ScannedLocation.ukNetworkFront,
+      DataStore.findDataPointsForDay(ScannedLocation.ukNetworkFront, dt)
+    )
+
     Ok(views.html.day(dt.toString(dayFormat), x))
   }
 
   def slide(year: Int, month: Int, day: Int) = Action { r =>
     val dt = new LocalDate(year, month, day)
 
-    val screens = Screenshots(DataStore.findDataPointsForDay(ScannedLocation.ukNetworkFront, dt))
+    val screens = Screenshots(
+      ScannedLocation.ukNetworkFront,
+      DataStore.findDataPointsForDay(ScannedLocation.ukNetworkFront, dt)
+    )
 
     val selectedTime = r.getQueryString("initialTime")
 
@@ -62,7 +61,4 @@ object Application extends Controller {
     Ok(views.html.slide(screens, initialIdx, screens.shots(initialIdx)))
   }
 
-  def slideDemo = Action {
-    Ok(views.html.slideDemo())
-  }
 }
