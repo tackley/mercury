@@ -22,11 +22,13 @@ object DataStore {
   case class Screenshot(dt: DateTime, basePath: URL, commonFilename: String) {
     def hour = dt.getHourOfDay
     def time = dt.toString("HH:mm")
+    def timeid = "T" + time
 
-    def slideUrl = routes.Application.slide(dt.getYear, dt.getMonthOfYear, dt.getDayOfMonth) +
+    def slideUrl: String = routes.Application.slide(dt.getYear, dt.getMonthOfYear, dt.getDayOfMonth) +
       s"?initialTime=$time"
 
-    def thumbnailsViewUrl = routes.Application.day(dt.getYear, dt.getMonthOfYear, dt.getDayOfMonth)
+    def thumbnailsViewUrl: String = routes.Application.day(dt.getYear, dt.getMonthOfYear, dt.getDayOfMonth) +
+      "#" + timeid
 
     def thumbnail = new URL(basePath, "thumb_" + commonFilename + ".jpg")
     def full = new URL(basePath, "full_" + commonFilename + ".jpg")
@@ -35,15 +37,18 @@ object DataStore {
     def asJson = Json.obj(
       "dt" -> dt,
       "time" -> time,
-      "img" -> full.toString
+      "img" -> full.toString,
+      "thumbUrl" -> thumbnailsViewUrl.toString,
+      "htmlUrl" -> html.toString
     )
   }
 
 
   private val log = Logger(getClass)
 
-  private val s3 = new AmazonS3Client(Config.awsProvider)
-  s3.setRegion(Region.getRegion(Regions.EU_WEST_1))
+  private lazy val region = Region.getRegion(Regions.EU_WEST_1)
+  private lazy val s3 = region.createClient(classOf[AmazonS3Client], Config.awsProvider, null)
+
 
   private val bucket = "ophan-time-machine"
 

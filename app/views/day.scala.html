@@ -2,7 +2,9 @@
 
 @main("Network Front Time Machine") {
 
-@snippets.nav(screenshots.loc)
+@snippets.nav(screenshots)
+
+<script src="@routes.Assets.at("js/shots.min.js")" type="text/javascript"></script>
 
 <div class="container-fluid">
 
@@ -10,7 +12,7 @@
 
     @for( (hour, shots) <- screenshots.byHour) {
         <hr>
-        <h2>@hour:00</h2>
+        <h2>@hour.formatted("%02d"):00</h2>
 
         <div class="row-fluid">
 
@@ -18,7 +20,7 @@
         @for(shot <- shots.sortBy(_.dt.getMillis)) {
 
             <li>
-            <div class="thumbnail" id="@shot.time">
+            <div class="thumbnail" id="@shot.timeid">
                 <a href="@shot.slideUrl">
                 <img src="@shot.thumbnail">
                 <div class="caption text-center">@shot.time</div>

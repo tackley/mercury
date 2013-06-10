@@ -88,7 +88,7 @@
         "AvailabilityZones" : { "Fn::GetAZs" : "" },
         "LaunchConfigurationName" : { "Ref" : "LaunchConfig" },
         "MinSize" : "1",
-        "MaxSize" : "1",
+        "MaxSize" : "2",
         "DesiredCapacity" : "1",
         "HealthCheckType" : "ELB",
         "HealthCheckGracePeriod" : 300,

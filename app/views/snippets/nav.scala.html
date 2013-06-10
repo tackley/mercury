@@ -1,4 +1,4 @@
-@(loc: lib.ScannedLocation, optDisplayedShot: Option[lib.DataStore.Screenshot] = None)
+@(screenshots: Screenshots, optDisplayedShot: Option[lib.DataStore.Screenshot] = None, optTime: Option[String] = None)
 
 <div class="navbar navbar-fixed-top navbar-darker-text">
     <div class="navbar-inner">
@@ -7,7 +7,7 @@
             <ul class="nav">
                 <li class="dropdown">
                     <a class="dropdown-toggle" data-toggle="dropdown" href="#">
-                         @loc.name
+                         @screenshots.loc.name
                         <b class="caret"></b>
                     </a>
                     <ul class="dropdown-menu" role="menu">
@@ -30,20 +30,24 @@
                     </ul>
                 </li>
 
-                @for(shot <- optDisplayedShot) {
-                    <li>
-                        <p class="navbar-text">
-                            <span id="picker-time">@shot.time</span>
-                        </p>
-                    </li>
-                }
+                <li class="dropdown">
+                    <a class="dropdown-toggle" data-toggle="dropdown" href="#">
+                        <span id="tm-picker-time">@optDisplayedShot.map(_.time).getOrElse("00:00")</span>
+                        <b class="caret"></b>
+                    </a>
+                    <ul class="dropdown-menu" role="menu">
+                        @for( (txt, link) <- screenshots.hourlyQuickLinks) {
+                          <li><a href="@link">@txt</a></li>
+                        }
+                    </ul>
+                </li>
 
             </ul>
 
             @for(shot <- optDisplayedShot) {
 
-                <a class="btn btn-small" href="@shot.thumbnailsViewUrl#@shot.time">Show Thumbnails</a>
-                <p class="navbar-text pull-right" >use left and right arrow keys to navigate through time</p>
+                <a id="tm-thumb-link" class="btn btn-small" href="@shot.thumbnailsViewUrl">Show Thumbnails</a>
+                <p class="navbar-text pull-right" >use left and right arrow keys to navigate; hold alt to go faster</p>
             }
         </div>
     </div>

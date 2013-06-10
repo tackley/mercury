@@ -8,20 +8,22 @@ jQuery ->
   curShot = screenShots[curIdx]
 
   resetFlash = ->
-    $("#picker-time").css("background-color", "transparent")
+    $("#tm-picker-time").css("background-color", "transparent")
 
   refreshDisplay = ->
-    #console.log "idx = #{curIdx} setting src to #{curShot.img}..."
     $("#screenshot").attr("src", curShot.img)
-    $("#picker-time").text(curShot.time).css("background-color", "red")
+    $("#tm-picker-time").text(curShot.time).css("background-color", "yellow")
+    $("#tm-thumb-link").attr("href", curShot.thumbUrl)
+    $("#tm-html-link").attr("href", curShot.htmlUrl)
     # some browers don't fire image loads apparently, so
     # this timeout is a fallback in that case
-    setTimeout resetFlash, 5000
+    setTimeout resetFlash, 10000
 
   $("#screenshot").load ->
     resetFlash()
 
   $(document).keyup (e) ->
+    # alt key moves by an hour
     movementAmount = if e.altKey then 12 else 1
 
     if e.which == 39
