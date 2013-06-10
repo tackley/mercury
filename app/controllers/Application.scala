@@ -50,6 +50,7 @@ object Application extends Controller {
 
     val x = Screenshots(
       ScannedLocation.ukNetworkFront,
+      dt,
       DataStore.findDataPointsForDay(ScannedLocation.ukNetworkFront, dt)
     )
 
@@ -61,6 +62,7 @@ object Application extends Controller {
 
     val screens = Screenshots(
       ScannedLocation.ukNetworkFront,
+      dt,
       DataStore.findDataPointsForDay(ScannedLocation.ukNetworkFront, dt)
     )
 
