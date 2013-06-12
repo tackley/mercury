@@ -19,15 +19,15 @@ object DataStore {
     def url = s"http://$bucket.s3.amazonaws.com/$key"
   }
 
-  case class Screenshot(dt: DateTime, basePath: URL, commonFilename: String) {
+  case class Screenshot(loc: ScannedLocation, dt: DateTime, basePath: URL, commonFilename: String) {
     def hour = dt.getHourOfDay
     def time = dt.toString("HH:mm")
     def timeid = "T" + time
 
-    def slideUrl: String = routes.Application.slide(dt.getYear, dt.getMonthOfYear, dt.getDayOfMonth) +
+    def slideUrl: String = routes.Application.slide(loc, dt.getYear, dt.getMonthOfYear, dt.getDayOfMonth) +
       s"?initialTime=$time"
 
-    def thumbnailsViewUrl: String = routes.Application.day(dt.getYear, dt.getMonthOfYear, dt.getDayOfMonth) +
+    def thumbnailsViewUrl: String = routes.Application.day(loc, dt.getYear, dt.getMonthOfYear, dt.getDayOfMonth) +
       "#" + timeid
 
     def thumbnail = new URL(basePath, "thumb_" + commonFilename + ".jpg")
@@ -125,7 +125,7 @@ object DataStore {
       val key = r.getKey
       val rawDate = key.split("_").last.split("\\.").head
       val dt = fileDateFormat.parseDateTime(rawDate)
-      Screenshot(dt,
+      Screenshot(loc, dt,
         new URL(s"http://$bucket.s3.amazonaws.com/${searchPath.key}"),
         rawDate)
     }

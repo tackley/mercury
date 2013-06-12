@@ -4,9 +4,9 @@ import org.joda.time.{PeriodType, Period, LocalDate, DateTime}
 import controllers.routes
 
 object DaysHelper {
-  def lastWeek = for (daysAgo <- 2 to 7) yield {
+  def lastWeek(loc: ScannedLocation) = for (daysAgo <- 2 to 7) yield {
     val day = DateTime.now.minusDays(daysAgo)
-    day.dayOfWeek().getAsText -> routes.Application.day(day.getYear, day.getMonthOfYear, day.getDayOfMonth)
+    day.dayOfWeek().getAsText -> routes.Application.day(loc, day.getYear, day.getMonthOfYear, day.getDayOfMonth)
   }
 
   def nameForDay(d: LocalDate) = {

@@ -22,9 +22,9 @@
                         <b class="caret"></b>
                     </a>
                     <ul class="dropdown-menu" role="menu">
-                        <li><a href="@routes.Application.today">Today</a></li>
-                        <li><a href="@routes.Application.yesterday">Yesterday</a></li>
-                        @for( (name, url) <- lib.DaysHelper.lastWeek ) {
+                        <li><a href="@routes.Application.today(screenshots.loc)">Today</a></li>
+                        <li><a href="@routes.Application.yesterday(screenshots.loc)">Yesterday</a></li>
+                        @for( (name, url) <- lib.DaysHelper.lastWeek(screenshots.loc) ) {
                             <li><a href="@url">@name</a></li>
                         }
                     </ul>

@@ -7,7 +7,9 @@ import play.api.Logger
 object PhantomSnapper {
   private val log = Logger.logger
 
-  def snap(url: String, tmpDir: Path): File = {
+  // the synchronized here is to stop us kicking up > 1 phantomjs process at once -
+  // we're only running on a micro after all!
+  def snap(url: String, tmpDir: Path): File = synchronized {
     import scala.sys.process._
 
     val pngOutput = tmpDir / "output.png"

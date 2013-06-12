@@ -25,14 +25,14 @@ object Application extends Controller {
     Ok(views.html.home())
   }
 
-  def today = {
+  def today(loc: ScannedLocation) = {
     val t = LocalDate.now()
-    day(t.getYear, t.getMonthOfYear, t.getDayOfMonth)
+    day(loc, t.getYear, t.getMonthOfYear, t.getDayOfMonth)
   }
 
-  def yesterday = {
+  def yesterday(loc: ScannedLocation) = {
     val t = LocalDate.now().minusDays(1)
-    day(t.getYear, t.getMonthOfYear, t.getDayOfMonth)
+    day(loc, t.getYear, t.getMonthOfYear, t.getDayOfMonth)
   }
 
   val dayFormat = new DateTimeFormatterBuilder()
@@ -45,25 +45,25 @@ object Application extends Controller {
     .appendYear(4, 4)
     .toFormatter
 
-  def day(year: Int, month: Int, day: Int) = Action {
+  def day(loc: ScannedLocation, year: Int, month: Int, day: Int) = Action {
     val dt = new LocalDate(year, month, day)
 
     val x = Screenshots(
-      ScannedLocation.ukNetworkFront,
+      loc,
       dt,
-      DataStore.findDataPointsForDay(ScannedLocation.ukNetworkFront, dt)
+      DataStore.findDataPointsForDay(loc, dt)
     )
 
     Ok(views.html.day(dt.toString(dayFormat), x))
   }
 
-  def slide(year: Int, month: Int, day: Int) = Action { r =>
+  def slide(loc: ScannedLocation, year: Int, month: Int, day: Int) = Action { r =>
     val dt = new LocalDate(year, month, day)
 
     val screens = Screenshots(
-      ScannedLocation.ukNetworkFront,
+      loc,
       dt,
-      DataStore.findDataPointsForDay(ScannedLocation.ukNetworkFront, dt)
+      DataStore.findDataPointsForDay(loc, dt)
     )
 
     val selectedTime = r.getQueryString("initialTime")

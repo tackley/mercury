@@ -8,7 +8,7 @@ import scala.concurrent.duration._
 object Backend {
   import play.api.libs.concurrent.Execution.Implicits._
 
-  val poller = new Poller(ScannedLocation.ukNetworkFront)(Akka.system)
+  val poller = new Poller(ScannedLocation.all)(Akka.system)
 
   def start() {
     Akka.system.scheduler.schedule(5.seconds, 1.minutes) {

@@ -6,12 +6,13 @@ GET     /assets/*file               controllers.Assets.at(path="/public", file)
 
 GET     /                           controllers.Application.home
 
-GET     /uknf                       controllers.Application.today
-GET     /uknf/yesterday             controllers.Application.yesterday
-GET     /uknf/:year/:month/:day     controllers.Application.day(year: Int, month: Int, day: Int)
-
-GET     /uknf/slide/:year/:month/:day   controllers.Application.slide(year: Int, month: Int, day: Int)
-
-
 GET     /health-check               controllers.Application.healthcheck
 GET     /management/manifest        controllers.Application.manifest
+
+GET     /:loc                       controllers.Application.today(loc: lib.ScannedLocation)
+GET     /:loc/yesterday             controllers.Application.yesterday(loc: lib.ScannedLocation)
+GET     /:loc/:year/:month/:day     controllers.Application.day(loc: lib.ScannedLocation, year: Int, month: Int, day: Int)
+
+GET     /:loc/slide/:year/:month/:day   controllers.Application.slide(loc: lib.ScannedLocation, year: Int, month: Int, day: Int)
+
+
