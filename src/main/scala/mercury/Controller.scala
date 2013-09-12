@@ -30,8 +30,8 @@ class Controller extends unfiltered.filter.Plan {
       val url = p("url").headOption
 
 
-      val history: List[HistoryEntry] = url.map {
-        Store.findHistory(_).sortBy(_.to)
+      val history: List[(Page, List[HistoryEntry])] = url.map {
+        Store.findHistory(_).groupBy(_.pos.src).toList.sortBy { case (page, _) => page.name }
       } getOrElse Nil
 
       ResponseString(html.history.render(url.getOrElse(""), history).body) ~> HtmlContent

@@ -11,6 +11,10 @@ case class Position(
     s"""${src.name} "${component}" position $idx""" +
       sublinkIdx.map(" sublink " + _).getOrElse("")
 
+  def inWordsWithoutPageName =
+    s""""${component}" position $idx""" +
+      sublinkIdx.map(" sublink " + _).getOrElse("")
+
   def isSublink = sublinkIdx.isDefined
 }
 

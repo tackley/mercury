@@ -1,4 +1,4 @@
-@(url: String, historyEntries: List[mercury.HistoryEntry])
+@(url: String, pages: List[(mercury.Page, List[mercury.HistoryEntry])])
 @import mercury._
 
 @main("Show History") {
@@ -14,11 +14,15 @@
 
   <p>Note: all times are now displayed in London local time</p>
 
-  <ol>
-    @for(entry <- historyEntries) {
-       <li>@RelativeDateTimeFormatter.print(entry.from) -> @RelativeDateTimeFormatter.print(entry.to): @entry.pos.inWords</li>
-    }
-  </ol>
+  @for( (page, historyEntries) <- pages) {
+
+  <h3>@page.name</h3>
+      <ul>
+        @for(entry <- historyEntries.sortBy(_.to)) {
+           <li>@RelativeDateTimeFormatter.print(entry.from) -> @RelativeDateTimeFormatter.print(entry.to): @entry.pos.inWordsWithoutPageName</li>
+        }
+      </ul>
+  }
 
   @if(!url.isEmpty) {
       <p>
