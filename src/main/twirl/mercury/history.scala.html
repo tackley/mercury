@@ -12,8 +12,9 @@
         <input type="submit" value="Jump It">
     </form>
 
+  <p>Note: all times are now displayed in London local time</p>
 
-<ol>
+  <ol>
     @for(entry <- historyEntries) {
        <li>@RelativeDateTimeFormatter.print(entry.from) -> @RelativeDateTimeFormatter.print(entry.to): @entry.pos.inWords</li>
     }

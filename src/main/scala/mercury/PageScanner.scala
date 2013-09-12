@@ -25,7 +25,7 @@ object PageScanner {
     // need to set GU_EDITION to uk to actually get the UK edition from google's US servers
     // aarrrrrrgh!!!
     val conn = page.url.openConnection()
-    conn.setRequestProperty("Cookie", "GU_EDITION=uk")
+    conn.setRequestProperty("X-GU-GeoLocation", s"ip:10.0.0.1,country:${page.country}")
     conn.setRequestProperty("User-Agent", "mercury; contact graham.tackley@guardian.co.uk")
 
     val doc = Jsoup.parse(conn.getInputStream, "UTF-8", page.url.toString)
