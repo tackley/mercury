@@ -2,7 +2,7 @@ name := "mercury"
 
 organization := "com.gu"
 
-scalaVersion := "2.10.0"
+scalaVersion := "2.10.2"
 
 libraryDependencies ++= Seq(
     "org.joda" % "joda-convert" % "1.1" % "provided",
